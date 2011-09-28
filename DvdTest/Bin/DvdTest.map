@@ -1,0 +1,740 @@
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+Address of section .text set to 0x80003100
+LOAD /cygdrive/d/temp/cc9cyAac.o
+LOAD /cygdrive/d/temp/cc8TYBOe.o
+LOAD /cygdrive/d/temp/ccp8LuFl.o
+LOAD /cygdrive/d/temp/ccze7YeS.o
+LOAD /cygdrive/d/temp/ccEgRTws.o
+LOAD /cygdrive/d/temp/cc9VolS6.o
+LOAD /cygdrive/d/temp/ccWUtfxP.o
+LOAD /cygdrive/d/temp/ccBR9rkG.o
+LOAD /cygdrive/d/temp/cc6CqTWK.o
+LOAD /cygdrive/d/temp/ccm6nRrL.o
+LOAD /cygdrive/d/temp/ccaf2iwU.o
+LOAD /cygdrive/d/temp/cc0mZ2kf.o
+LOAD /cygdrive/d/temp/ccCbCfeL.o
+LOAD /cygdrive/d/temp/ccYXvFYS.o
+LOAD /cygdrive/d/temp/cctsQchZ.o
+LOAD libogc.a
+LOAD /cygdrive/d/Console/GameCube/dev/DevkitCube/bin/../lib/gcc-lib/powerpc-eabi-elf/3.3/libgcc.a
+LOAD /cygdrive/d/Console/GameCube/dev/DevkitCube/bin/../lib/gcc-lib/powerpc-eabi-elf/3.3/libgcc.a
+LOAD /cygdrive/d/Console/GameCube/dev/DevkitCube/bin/../lib/gcc-lib/powerpc-eabi-elf/3.3/crtsavres.o
+                0x00000000                PROVIDE (__stack, 0x0)
+                0x00000000                PROVIDE (___stack, 0x0)
+                0x01800074                . = (0x1800000 + SIZEOF_HEADERS)
+
+.interp
+ *(.interp)
+
+.hash
+ *(.hash)
+
+.dynsym
+ *(.dynsym)
+
+.dynstr
+ *(.dynstr)
+
+.gnu.version
+ *(.gnu.version)
+
+.gnu.version_d
+ *(.gnu.version_d)
+
+.gnu.version_r
+ *(.gnu.version_r)
+
+.rel.init
+ *(.rel.init)
+
+.rela.init
+ *(.rela.init)
+
+.rel.text
+ *(.rel.text .rel.text.* .rel.gnu.linkonce.t.*)
+
+.rela.text
+ *(.rela.text .rela.text.* .rela.gnu.linkonce.t.*)
+
+.rel.fini
+ *(.rel.fini)
+
+.rela.fini
+ *(.rela.fini)
+
+.rel.rodata
+ *(.rel.rodata .rel.rodata.* .rel.gnu.linkonce.r.*)
+
+.rela.rodata
+ *(.rela.rodata .rela.rodata.* .rela.gnu.linkonce.r.*)
+
+.rel.data
+ *(.rel.data .rel.data.* .rel.gnu.linkonce.d.*)
+
+.rela.data
+ *(.rela.data .rela.data.* .rela.gnu.linkonce.d.*)
+
+.rel.tdata
+ *(.rel.tdata .rel.tdata.* .rel.gnu.linkonce.td.*)
+
+.rela.tdata
+ *(.rela.tdata .rela.tdata.* .rela.gnu.linkonce.td.*)
+
+.rel.tbss
+ *(.rel.tbss .rel.tbss.* .rel.gnu.linkonce.tb.*)
+
+.rela.tbss
+ *(.rela.tbss .rela.tbss.* .rela.gnu.linkonce.tb.*)
+
+.rel.ctors
+ *(.rel.ctors)
+
+.rela.ctors
+ *(.rela.ctors)
+
+.rel.dtors
+ *(.rel.dtors)
+
+.rela.dtors
+ *(.rela.dtors)
+
+.rel.got
+ *(.rel.got)
+
+.rela.got
+ *(.rela.got)
+
+.rela.got1
+ *(.rela.got1)
+
+.rela.got2
+ *(.rela.got2)
+
+.rel.sdata
+ *(.rel.sdata .rel.sdata.* .rel.gnu.linkonce.s.*)
+
+.rela.sdata
+ *(.rela.sdata .rela.sdata.* .rela.gnu.linkonce.s.*)
+
+.rel.sbss
+ *(.rel.sbss .rel.sbss.* .rel.gnu.linkonce.sb.*)
+
+.rela.sbss
+ *(.rela.sbss .rela.sbss.* .rela.gnu.linkonce.sb.*)
+
+.rel.sdata2
+ *(.rel.sdata2 .rel.sdata2.* .rel.gnu.linkonce.s2.*)
+
+.rela.sdata2
+ *(.rela.sdata2 .rela.sdata2.* .rela.gnu.linkonce.s2.*)
+
+.rel.sbss2
+ *(.rel.sbss2 .rel.sbss2.* .rel.gnu.linkonce.sb2.*)
+
+.rela.sbss2
+ *(.rela.sbss2 .rela.sbss2.* .rela.gnu.linkonce.sb2.*)
+
+.rel.bss
+ *(.rel.bss .rel.bss.* .rel.gnu.linkonce.b.*)
+
+.rela.bss
+ *(.rela.bss .rela.bss.* .rela.gnu.linkonce.b.*)
+
+.rel.plt
+ *(.rel.plt)
+
+.rela.plt
+ *(.rela.plt)
+
+.init
+ *(.init)
+
+.text           0x80003100     0x7114
+ *(.text .stub .text.* .gnu.linkonce.t.*)
+ .text          0x80003100      0x398 /cygdrive/d/temp/cc9cyAac.o
+                0x800032c0                CacheInit
+                0x80003100                _start
+ .text          0x80003498      0x124 /cygdrive/d/temp/cc8TYBOe.o
+                0x80003498                SUB_BootXenoShell
+ .text          0x800035bc       0xa4 /cygdrive/d/temp/ccp8LuFl.o
+                0x80003650                GetMSR
+                0x800035ec                dcache_inv
+                0x80003658                SetMSR
+                0x800035bc                dcache_flush
+                0x8000361c                flush_code
+ .text          0x80003660      0x930 /cygdrive/d/temp/ccze7YeS.o
+                0x800037d8                _Z17DEBUG_ShowValueU8ssh
+                0x80003e94                _Z19GC_DBG_PrintHexDumpiPvii
+                0x800038e8                _Z18DEBUG_ShowValueU16sst
+                0x80003d58                _Z11DEBUG_PrintssPc
+                0x80003e4c                _Z17DEBUG_PrintStatusPc
+                0x80003b30                _Z8DbgPrintPKcz
+                0x80003d2c                _Z23DEBUG_GetConsoleNewlines
+                0x800039a8                _Z23DEBUG_ShowValueU16NamedsstPc
+                0x80003c98                _Z18DEBUG_ResetConsoleii
+                0x80003e84                _Z24DEBUG_PrintStatusNoClearPc
+                0x80003a30                _Z23DEBUG_ShowValueU32NamedssmPc
+                0x80003e14                _Z17DEBUG_ClearStatusv
+                0x80003be4                _Z9DbgPrintSPKcz
+                0x80003948                _Z18DEBUG_ShowValueU32ssm
+                0x80003660                _Z18DEBUG_SetTextColorm
+                0x80003ce8                _Z11DEBUG_PrintPc
+                0x80003ab8                _Z15DEBUG_PrintCharssc
+                0x8000366c                _Z14DEBUG_InitTextm
+ .text          0x80003f90      0x618 /cygdrive/d/temp/ccEgRTws.o
+                0x80004030                GC_Video_ClearFrameBuffer
+                0x8000422c                _Z22GC_Video_WaitForVBlankv
+                0x800042c0                _Z19GC_Video_RGBToYCbCrhhh
+                0x80004140                _Z25GC_Video_InterruptHandlerv
+                0x80004258                _Z17GC_Video_SetBlackh
+                0x80003fd4                _Z23GC_Video_SetFrameBufferPvi
+                0x80003f90                _Z13GC_Video_Initi
+                0x800041a4                GC_Video_ClearIF
+ .text          0x800045a8       0x30 /cygdrive/d/temp/cc9VolS6.o
+                0x800045a8                StrLen
+ .text          0x800045d8       0x34 /cygdrive/d/temp/ccWUtfxP.o
+                0x800045d8                _Z8GC_SRandi
+                0x800045e4                _Z7GC_Randv
+ .text          0x8000460c      0x2a0 /cygdrive/d/temp/ccBR9rkG.o
+                0x80004770                _Z11GC_PAD_ReadP6GC_Padi
+                0x800047c4                _Z21GC_PAD_GetCurrentKeysv
+                0x80004874                _Z17GC_PAD_WaitForKeyt
+                0x8000460c                _Z11GC_PAD_Initv
+                0x8000484c                _Z20GC_PAD_WaitForAnyKeyv
+ *fill*         0x800048ac        0x4 00000000
+ .text          0x800048b0     0x12e0 /cygdrive/d/temp/cc6CqTWK.o
+                0x80004c44                _Z20DVD_CustomCommandRawPm
+                0x8000511c                _Z21DVD_ReadDriveMemBlockmPvm
+                0x800049d4                _Z11DVD_Status2v
+                0x80004d84                _Z16DVD_SetDebugModev
+                0x80004f58                _Z14DVD_StartDrivev
+                0x80005534                _Z9DVD_Resetv
+                0x80004af0                _Z15DVD_AudioEnablev
+                0x80005088                _Z21DVD_ReadDriveMemDwordm
+                0x80004b38                _Z15DVD_AudioStatusv
+                0x80004d24                _Z26DVD_CustomCommandImmediatePc
+                0x80004b14                _Z16DVD_AudioDisablev
+                0x800049f4                _Z16DVD_RequestErrorv
+                0x80005388                _Z8DVD_ReadPvmm
+                0x80004978                _Z13DVD_WaitBreakv
+                0x80004a7c                _Z11DVD_InquiryP13DVD_DRIVEINFO
+                0x80004a48                _Z8DVD_Seekm
+                0x800057f8                _Z31DVD_Anaconda_InjectFirmwareHackv
+                0x8000517c                _Z22DVD_WriteDriveMemDwordmm
+                0x800057d8                _Z18DVD_Anaconda_Delayv
+                0x80004b60                _Z17DVD_CustomCommandmPvmi
+                0x80005000                _Z26DVD_DisableErrorCorrectionv
+                0x80005790                _Z19DVD_Anaconda_Delay2v
+                0x800048b0                _Z19DVD_PrepareCmdStatev
+                0x800049e4                _Z12DVD_GetErrorv
+                0x800052b0                _Z10DVD_ReadIdPv
+                0x800056e4                _Z24DVD_Anaconda_UnlockDrivev
+                0x800049a4                _Z15DVD_IsCoverOpenv
+                0x800048e8                _Z9DVD_Breakv
+                0x80004fcc                _Z18DVD_SetReadOptionst
+                0x8000565c                _Z23DVD_Anaconda_ReadDiscIdv
+                0x800055a8                _Z14DVD_SwapToDVDRv
+                0x800049c4                _Z11DVD_Status1v
+                0x80005630                _Z18DVD_Anaconda_Resetv
+                0x800057b4                _Z19DVD_Anaconda_Delay8v
+                0x80004a24                _Z8DVD_Stopv
+                0x800048f8                _Z17DVD_WaitImmediatev
+                0x80004934                _Z11DVD_WaitDMAv
+                0x80004eb4                _Z20DVD_CustomDbgCommandmmmPm
+                0x80004e30                _Z17DVD_SetDebugMode2v
+                0x80004dac                _Z17DVD_SetDebugMode1v
+                0x80005238                _Z22DVD_WriteDriveMemBlockmPvm
+                0x80005298                _Z12DVD_CallFuncm
+ .text          0x80005b90      0x1bc /cygdrive/d/temp/ccm6nRrL.o
+                0x80005c00                GC_Memory_DCZeroRange
+                0x80005bd4                GC_Memory_DCInvalidateRange
+                0x80005ba0                GC_Memory_CachedToPhysical
+                0x80005ba8                GC_Memory_UncachedToPhysical
+                0x80005b90                GC_Memory_PhysicalToCached
+                0x80005bb0                GC_Memory_CachedToUncached
+                0x80005c8c                GC_Memory_ICInvalidateRange
+                0x80005b98                GC_Memory_PhysicalToUncached
+                0x80005ce8                GC_Memory_memset
+                0x80005c2c                GC_Memory_DCFlushRange
+                0x80005bc0                GC_Memory_ICFreeze
+                0x80005cc4                GC_Memory_memcpy
+                0x80005bb8                GC_Memory_UncachedToCached
+                0x80005c5c                GC_Memory_DCFlushRangeNoSync
+                0x80005d04                GC_Memory_memcmp
+ .text          0x80005d4c      0x274 /cygdrive/d/temp/ccaf2iwU.o
+                0x80005f2c                _Z8GC_Sleepm
+                0x80005db8                _Z10GC_SleepVBm
+                0x80005d4c                GC_GetTime
+                0x80005e00                _Z12tb_diff_msecP4tb_tS0_
+                0x80005d9c                _Z27GC_Time_ConvertToSystemTimex
+                0x80005d64                _Z21GC_Time_GetSystemTimev
+                0x80005e4c                _Z12tb_diff_usecP4tb_tS0_
+                0x80005e98                _Z10GC_SleepUSm
+ .text          0x80005fc0      0x8c8 /cygdrive/d/temp/cc0mZ2kf.o
+                0x80006274                vsprintf
+                0x80006808                sprintf
+ .text          0x80006888      0x7bc /cygdrive/d/temp/ccCbCfeL.o
+                0x80006d8c                exi_request_irq
+                0x80006f38                exi_read
+                0x800069dc                exi_imm_ex
+                0x80006d60                exi_init
+                0x80006fa8                _Z17GC_EXI_RetrieveIDmm
+                0x80006f40                exi_write
+                0x800068cc                exi_deselect
+                0x80006a70                exi_dma_start
+                0x80006bb4                _Z18exi_refresh_enablev
+                0x80006aa4                exi_imm_fast
+                0x80006f94                _Z12GC_EXI_Probem
+                0x80006970                exi_sync
+                0x800068f4                exi_imm
+                0x80006888                exi_select
+                0x80006f48                exi_rw
+                0x80006e70                exi_free_irq
+                0x80006bd8                _Z21exi_interrupt_handleriPv
+ *fill*         0x80007044       0x1c 00000000
+ .text          0x80007060     0x2d00 /cygdrive/d/temp/ccYXvFYS.o
+                0x80008e6c                _Z11ShowWatchesv
+                0x80007b64                _Z16CMD_SetDebugModev
+                0x80007c00                _Z25CMD_InjectCustomDriveCodev
+                0x80008cc8                _Z25CMD_BrowseCustomCommands1i
+                0x80007eb0                _Z20CMD_TestReadSettingsv
+                0x800083ec                _Z7nothingv
+                0x80007a68                _Z14CMD_ReadSectorb
+                0x800090f0                _Z11ShowHexDumpPmm
+                0x80008ae8                _Z15CMD_ReadMemcardv
+                0x80007e64                _Z19CMD_ShowDebugBufferv
+                0x80008874                _Z11ReadMemcardmiPv
+                0x80007bd0                _Z24CMD_RunAnacondaDrivecodev
+                0x80007c64                _Z18CMD_ReadDriveSpeedv
+                0x80009450                _Z21IsValidSectorCheckSumPhm
+                0x8000942c                _Z17GetSectorCheckSumPh
+                0x80009308                _Z10GC_Startupv
+                0x800083f0                _Z10InitSystemm
+                0x80007a24                _Z18CMD_ReadDVDInquiryv
+                0x80007b94                _Z18CMD_CleanErrorBytev
+                0x80009cd8                _Z10LoadBinaryv
+                0x80008364                _Z7LoadDolPvmb
+                0x800083e8                _Z11CMD_LoadDolv
+                0x800079b4                _Z18FlushHexDumpBufferim
+                0x80007ad0                _Z16CMD_ReadDriveMemm
+                0x800086a4                _Z13exi_sram_readPv
+                0x80008e80                _Z9ShowStatsv
+                0x80008710                _Z14exi_sram_writePv
+                0x800087ac                _Z16ReadMemcardBlockmPv
+                0x80007b1c                _Z13CMD_ReadGCMemm
+                0x80007cb0                _Z27CMD_ExecuteDriveCodeCommandm
+                0x80009464                main
+                0x8000877c                _Z12CMD_ReadSRAMv
+                0x8000939c                _Z7Startupv
+                0x80008b44                _Z17CMD_BrowseSectorsi
+                0x80007cdc                _Z19CMD_DumpDVDDriveMemv
+                0x8000829c                _Z20fn_load_dol_fn_inmemPvb
+                0x80008470                _Z14load_apploaderPv
+                0x80009404                _Z6TestXYPmS_
+                0x80007de0                _Z14CMD_StartDrivebb
+                0x80008d44                _Z25CMD_BrowseCustomCommands2i
+                0x80008664                _Z17CalcSRAMChecksumsPv
+                0x80007d5c                _Z17CMD_ReadApploaderv
+ .text          0x80009d60      0x2d4 /cygdrive/d/temp/cctsQchZ.o
+                0x80009e88                _Z22UnloadXenoGC_Permanentv
+                0x80009d60                _Z13Flash_Startupv
+                0x80009f04                _Z9FlashMainv
+                0x80009df4                _Z11CheckStatusv
+ .text          0x8000a034      0x1e0 /cygdrive/d/Console/GameCube/dev/DevkitCube/bin/../lib/gcc-lib/powerpc-eabi-elf/3.3/crtsavres.o
+                0x8000a128                _restgpr_18
+                0x8000a200                _restgpr_31_x
+                0x8000a148                _restgpr_26
+                0x8000a0b4                _savegpr_27
+                0x8000a140                _restgpr_24
+                0x8000a1e0                _restgpr_23_x
+                0x8000a0d8                _restfpr_17
+                0x8000a11c                _restgpr_15
+                0x8000a190                _restfpr_25_x
+                0x8000a1c0                _restgpr_15_x
+                0x8000a0f0                _restfpr_23
+                0x8000a144                _restgpr_25
+                0x8000a080                _savegpr_14
+                0x8000a174                _restfpr_18_x
+                0x8000a03c                _savefpr_16
+                0x8000a15c                _restgpr_31
+                0x8000a16c                _restfpr_16_x
+                0x8000a1d0                _restgpr_19_x
+                0x8000a050                _savefpr_21
+                0x8000a084                _savegpr_15
+                0x8000a1fc                _restgpr_30_x
+                0x8000a1c8                _restgpr_17_x
+                0x8000a06c                _savefpr_28
+                0x8000a1f8                _restgpr_29_x
+                0x8000a100                _restfpr_27
+                0x8000a198                _restfpr_27_x
+                0x8000a1a8                _restfpr_31_x
+                0x8000a0e0                _restfpr_19
+                0x8000a18c                _restfpr_24_x
+                0x8000a0b8                _savegpr_28
+                0x8000a0b0                _savegpr_26
+                0x8000a118                _restgpr_14
+                0x8000a038                _savefpr_15
+                0x8000a068                _savefpr_27
+                0x8000a168                _restfpr_15_x
+                0x8000a0d0                _restfpr_15
+                0x8000a188                _restfpr_23_x
+                0x8000a054                _savefpr_22
+                0x8000a0e8                _restfpr_21
+                0x8000a164                _restfpr_14_x
+                0x8000a134                _restgpr_21
+                0x8000a040                _savefpr_17
+                0x8000a0f8                _restfpr_25
+                0x8000a0ec                _restfpr_22
+                0x8000a1dc                _restgpr_22_x
+                0x8000a034                _savefpr_14
+                0x8000a1ec                _restgpr_26_x
+                0x8000a1f4                _restgpr_28_x
+                0x8000a0ac                _savegpr_25
+                0x8000a1a4                _restfpr_30_x
+                0x8000a1e8                _restgpr_25_x
+                0x8000a1e4                _restgpr_24_x
+                0x8000a09c                _savegpr_21
+                0x8000a04c                _savefpr_20
+                0x8000a150                _restgpr_28
+                0x8000a0cc                _restfpr_14
+                0x8000a070                _savefpr_29
+                0x8000a12c                _restgpr_19
+                0x8000a130                _restgpr_20
+                0x8000a1cc                _restgpr_18_x
+                0x8000a180                _restfpr_21_x
+                0x8000a078                _savefpr_31
+                0x8000a098                _savegpr_20
+                0x8000a154                _restgpr_29
+                0x8000a090                _savegpr_18
+                0x8000a048                _savefpr_19
+                0x8000a104                _restfpr_28
+                0x8000a0fc                _restfpr_26
+                0x8000a08c                _savegpr_17
+                0x8000a19c                _restfpr_28_x
+                0x8000a0e4                _restfpr_20
+                0x8000a170                _restfpr_17_x
+                0x8000a074                _savefpr_30
+                0x8000a060                _savefpr_25
+                0x8000a0c4                _savegpr_31
+                0x8000a0a4                _savegpr_23
+                0x8000a05c                _savefpr_24
+                0x8000a1a0                _restfpr_29_x
+                0x8000a044                _savefpr_18
+                0x8000a0bc                _savegpr_29
+                0x8000a178                _restfpr_19_x
+                0x8000a14c                _restgpr_27
+                0x8000a138                _restgpr_22
+                0x8000a0a8                _savegpr_24
+                0x8000a194                _restfpr_26_x
+                0x8000a0dc                _restfpr_18
+                0x8000a094                _savegpr_19
+                0x8000a0d4                _restfpr_16
+                0x8000a1bc                _restgpr_14_x
+                0x8000a058                _savefpr_23
+                0x8000a10c                _restfpr_30
+                0x8000a088                _savegpr_16
+                0x8000a17c                _restfpr_20_x
+                0x8000a108                _restfpr_29
+                0x8000a0f4                _restfpr_24
+                0x8000a0c0                _savegpr_30
+                0x8000a1d8                _restgpr_21_x
+                0x8000a158                _restgpr_30
+                0x8000a184                _restfpr_22_x
+                0x8000a1c4                _restgpr_16_x
+                0x8000a1f0                _restgpr_27_x
+                0x8000a0a0                _savegpr_22
+                0x8000a120                _restgpr_16
+                0x8000a13c                _restgpr_23
+                0x8000a124                _restgpr_17
+                0x8000a064                _savefpr_26
+                0x8000a1d4                _restgpr_20_x
+                0x8000a110                _restfpr_31
+ *(.gnu.warning)
+
+.fini
+ *(.fini)
+                0x8000a214                PROVIDE (__etext, .)
+                0x8000a214                PROVIDE (_etext, .)
+                0x8000a214                PROVIDE (etext, .)
+
+.rodata         0x8000a218     0x6b7c
+ *(.rodata .rodata.* .gnu.linkonce.r.*)
+ .rodata.str1.4
+                0x8000a218        0x4 /cygdrive/d/temp/ccze7YeS.o
+ .rodata        0x8000a21c     0x6000 /cygdrive/d/temp/ccze7YeS.o
+ *fill*         0x8001021c        0x4 00
+ .rodata.cst8   0x80010220       0x70 /cygdrive/d/temp/ccEgRTws.o
+ .rodata        0x80010290      0x180 /cygdrive/d/temp/ccEgRTws.o
+ .rodata.str1.4
+                0x80010410       0x90 /cygdrive/d/temp/cc6CqTWK.o
+ .rodata.str1.4
+                0x800104a0       0x57 /cygdrive/d/temp/cc0mZ2kf.o
+                                 0x58 (size before relaxing)
+ *fill*         0x800104f7        0x1 00
+ .rodata        0x800104f8      0x194 /cygdrive/d/temp/cc0mZ2kf.o
+ .rodata.str1.4
+                0x8001068c      0x639 /cygdrive/d/temp/ccYXvFYS.o
+                                0x63c (size before relaxing)
+ *fill*         0x80010cc5        0x3 00
+ .rodata.cst4   0x80010cc8        0x8 /cygdrive/d/temp/ccYXvFYS.o
+ .rodata.cst8   0x80010cd0        0x8 /cygdrive/d/temp/ccYXvFYS.o
+ .rodata.str1.4
+                0x80010cd8       0xbc /cygdrive/d/temp/cctsQchZ.o
+
+.rodata1
+ *(.rodata1)
+
+.sdata2         0x80010d94        0x0
+ *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
+
+.sbss2
+ *(.sbss2 .sbss2.* .gnu.linkonce.sb2.*)
+
+.eh_frame_hdr
+ *(.eh_frame_hdr)
+                0x80010d94                . = .
+                0x80010d94                . = ALIGN (0x4)
+                0x80010d94                PROVIDE (__preinit_array_start, .)
+
+.preinit_array
+ *(.preinit_array)
+                0x80010d94                PROVIDE (__preinit_array_end, .)
+                0x80010d94                PROVIDE (__init_array_start, .)
+
+.init_array
+ *(.init_array)
+                0x80010d94                PROVIDE (__init_array_end, .)
+                0x80010d94                PROVIDE (__fini_array_start, .)
+
+.fini_array
+ *(.fini_array)
+                0x80010d94                PROVIDE (__fini_array_end, .)
+
+.data           0x80010d94      0x1b8
+ *(.data .data.* .gnu.linkonce.d.*)
+ .data          0x80010d94       0x60 /cygdrive/d/temp/ccze7YeS.o
+ .data          0x80010df4      0x158 /cygdrive/d/temp/ccYXvFYS.o
+                0x80010e00                g_szDvdCommands
+                0x80010df4                g_dwLbaPresets
+                0x80010e24                g_szDvdSpecialCommands
+
+.data1
+ *(.data1)
+
+.tdata
+ *(.tdata .tdata.* .gnu.linkonce.td.*)
+
+.tbss
+ *(.tbss .tbss.* .gnu.linkonce.tb.*)
+ *(.tcommon)
+
+.eh_frame
+ *(.eh_frame)
+
+.gcc_except_table
+ *(.gcc_except_table)
+
+.fixup
+ *(.fixup)
+
+.got1
+ *(.got1)
+
+.got2
+ *(.got2)
+
+.dynamic
+ *(.dynamic)
+
+.ctors
+ *crtbegin*.o(.ctors)
+ *(EXCLUDE_FILE(*crtend*.o) .ctors)
+ *(SORT(.ctors.*))
+ *(.ctors)
+
+.dtors
+ *crtbegin*.o(.dtors)
+ *(EXCLUDE_FILE(*crtend*.o) .dtors)
+ *(SORT(.dtors.*))
+ *(.dtors)
+
+.jcr
+ *(.jcr)
+
+.got
+ *(.got.plt)
+ *(.got)
+
+.sdata          0x80010f60    0x29f80
+ *(.sdata .sdata.* .gnu.linkonce.s.*)
+ .sdata         0x80010f60        0x4 /cygdrive/d/temp/ccWUtfxP.o
+                0x80010f60                g_nRandomSeed
+ .sdata         0x80010f64        0x8 /cygdrive/d/temp/cc6CqTWK.o
+                0x80010f68                drivemodel
+                0x80010f64                dvd
+ *fill*         0x80010f6c       0x14 00
+ .sdata         0x80010f80    0x29f60 /cygdrive/d/temp/ccYXvFYS.o
+                0x8003aec0                g_pDolImage
+                0x80012f64                g_pXenoROM
+                0x8003aec4                g_pDolImageEnd
+                0x80012f68                g_pXenoROMEnd
+                0x80013f5c                g_pBinaryImageEnd
+                0x80013f58                g_pBinaryImage
+                0x80010f84                g_pQCodeEnd
+                0x8003aec8                ebase
+                0x80010f80                g_pQCode
+                0x8003aee0                _edata = .
+                0x8003aee0                PROVIDE (edata, .)
+                0x8003aee0                __bss_start = .
+
+.sbss           0x8003aee0       0x68
+                0x8003aee0                PROVIDE (__sbss_start, .)
+                0x8003aee0                PROVIDE (___sbss_start, .)
+ *(.dynsbss)
+ *(.sbss .sbss.* .gnu.linkonce.sb.*)
+ .sbss          0x8003aee0        0x8 /cygdrive/d/temp/ccze7YeS.o
+                0x8003aee4                g_nConsoleX
+                0x8003aee6                g_nConsoleY
+ .sbss          0x8003aee8        0xc /cygdrive/d/temp/ccEgRTws.o
+                0x8003aef0                secondCount
+                0x8003aee8                g_pFrameBuffer
+                0x8003aeec                frameCount
+ .sbss          0x8003aef4        0x1 /cygdrive/d/temp/cc6CqTWK.o
+                0x8003aef4                g_bRequestBreak
+ *fill*         0x8003aef5        0x3 00
+ .sbss          0x8003aef8        0xc /cygdrive/d/temp/ccCbCfeL.o
+ .sbss          0x8003af04       0x44 /cygdrive/d/temp/ccYXvFYS.o
+                0x8003af30                g_dwKeydownTime
+                0x8003af18                g_nLBA
+                0x8003af20                dwCmdByteSelected
+                0x8003af08                g_pdwCustomCommand
+                0x8003af24                g_dwDriveSpeed
+                0x8003af34                g_bUpdateDbgWatches
+                0x8003af46                g_bCheckDRE
+                0x8003af42                g_wDbgDumpBytes
+                0x8003af04                g_pBuffer
+                0x8003af2c                g_dwActiveDbgWatch
+                0x8003af3c                g_dwDbgVal2
+                0x8003af10                g_nKey
+                0x8003af35                g_bShowLowMem
+                0x8003af0c                g_nLbaPreset
+                0x8003af44                g_wDbgDumpOffset
+                0x8003af14                nViewOffset
+                0x8003af1c                dwCmd
+                0x8003af38                g_dwDbgVal1
+                0x8003af28                g_dwDriveSpeedDiff
+                0x8003af40                g_bDbgOutMode
+ *(.scommon)
+                0x8003af48                PROVIDE (__sbss_end, .)
+                0x8003af48                PROVIDE (___sbss_end, .)
+
+.plt
+ *(.plt)
+
+.bss            0x8003af60    0x205e0
+ *(.dynbss)
+ *(.bss .bss.* .gnu.linkonce.b.*)
+ .bss           0x8003af60      0x400 /cygdrive/d/temp/ccze7YeS.o
+ .bss           0x8003b360       0x54 /cygdrive/d/temp/ccCbCfeL.o
+ *fill*         0x8003b3b4        0xc 00
+ .bss           0x8003b3c0    0x20180 /cygdrive/d/temp/ccYXvFYS.o
+                0x8003b3c0                g_aBuffer
+                0x8005b4c0                g_aCustomDVDCommand
+                0x8005b500                g_aPrevDvdRegs
+ *(COMMON)
+                0x8005b540                . = ALIGN (0x4)
+                0x8005b540                . = ALIGN (0x4)
+                0x8005b540                _end = .
+                0x8005b540                __end = .
+                0x8005b540                PROVIDE (end, .)
+
+.stab
+ *(.stab)
+
+.stabstr
+ *(.stabstr)
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment        0x00000000       0xb0
+ *(.comment)
+ .comment       0x00000000       0x10 /cygdrive/d/temp/ccze7YeS.o
+ .comment       0x00000010       0x10 /cygdrive/d/temp/ccEgRTws.o
+ .comment       0x00000020       0x10 /cygdrive/d/temp/cc9VolS6.o
+ .comment       0x00000030       0x10 /cygdrive/d/temp/ccWUtfxP.o
+ .comment       0x00000040       0x10 /cygdrive/d/temp/ccBR9rkG.o
+ .comment       0x00000050       0x10 /cygdrive/d/temp/ccm6nRrL.o
+ .comment       0x00000060       0x10 /cygdrive/d/temp/ccaf2iwU.o
+ .comment       0x00000070       0x10 /cygdrive/d/temp/cc0mZ2kf.o
+ .comment       0x00000080       0x10 /cygdrive/d/temp/ccCbCfeL.o
+ .comment       0x00000090       0x10 /cygdrive/d/temp/ccYXvFYS.o
+ .comment       0x000000a0       0x10 /cygdrive/d/temp/cctsQchZ.o
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges
+ *(.debug_aranges)
+
+.debug_pubnames
+ *(.debug_pubnames)
+
+.debug_info
+ *(.debug_info .gnu.linkonce.wi.*)
+
+.debug_abbrev
+ *(.debug_abbrev)
+
+.debug_line
+ *(.debug_line)
+
+.debug_frame
+ *(.debug_frame)
+
+.debug_str
+ *(.debug_str)
+
+.debug_loc
+ *(.debug_loc)
+
+.debug_macinfo
+ *(.debug_macinfo)
+
+.debug_weaknames
+ *(.debug_weaknames)
+
+.debug_funcnames
+ *(.debug_funcnames)
+
+.debug_typenames
+ *(.debug_typenames)
+
+.debug_varnames
+ *(.debug_varnames)
+OUTPUT(Bin/DvdTest.elf elf32-powerpc)

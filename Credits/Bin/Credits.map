@@ -1,0 +1,89 @@
+
+Allocating common symbols
+Common symbol       size              file
+
+planedyn            0x48              d:\temp/ccC6aaaa.o
+font_size           0x400             d:\temp/ccQzbaaa.o
+font_height         0x4               d:\temp/ccQzbaaa.o
+font_offset         0x400             d:\temp/ccQzbaaa.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+                0x81700000                . = 0x81700000
+
+.text           0x81700000     0x1038
+ *(.text)
+ .text          0x81700000       0x16 d:\temp/ccoDaaaa.o
+                0x81700004                szDriveVer
+                0x81700000                _start
+ *fill*         0x81700016        0x2 00
+ .text          0x81700018      0x864 d:\temp/ccC6aaaa.o
+                0x81700698                tracePixel
+                0x81700834                cross
+ .text          0x8170087c      0x7bc d:\temp/ccQzbaaa.o
+                0x81700a54                main
+
+.data           0x81701038       0x84
+ *(.data)
+ .data          0x81701038       0x84 d:\temp/ccC6aaaa.o
+                0x81701038                vCamPos
+                0x81701044                plane
+                0x8170108c                sphere
+
+.sdata          0x817010bc       0x14
+ *(.sdata)
+ .sdata         0x817010bc        0x8 d:\temp/ccC6aaaa.o
+                0x817010bc                planes
+                0x817010c0                spheres
+ .sdata         0x817010c4        0xc d:\temp/ccQzbaaa.o
+                0x817010c4                fb
+                0x817010c8                bg
+                0x817010cc                ebase
+
+.rodata         0x817010d0       0x48
+ *(.rodata)
+ .rodata        0x817010d0       0x48 d:\temp/ccQzbaaa.o
+                0x817010d0                szCredits1
+                0x817010f4                szXeno
+                0x81701104                szNTSC10
+
+.rodata.cst4    0x81701118       0x40
+ .rodata.cst4   0x81701118       0x38 d:\temp/ccC6aaaa.o
+                                 0x4c (size before relaxing)
+ .rodata.cst4   0x81701150        0x8 d:\temp/ccQzbaaa.o
+
+.rodata.cst8    0x81701158       0x28
+ .rodata.cst8   0x81701158       0x20 d:\temp/ccC6aaaa.o
+                                 0x30 (size before relaxing)
+ .rodata.cst8   0x81701178        0x8 d:\temp/ccQzbaaa.o
+                                 0x10 (size before relaxing)
+                0x81701180                __bss_start = .
+
+.bss            0x81701180      0x848
+ *(.bss)
+ COMMON         0x81701180       0x48 d:\temp/ccC6aaaa.o
+                                  0x0 (size before relaxing)
+                0x81701180                planedyn
+ COMMON         0x817011c8      0x800 d:\temp/ccQzbaaa.o
+                                  0x0 (size before relaxing)
+                0x817011c8                font_size
+                0x817015c8                font_offset
+
+.sbss           0x817019c8        0x4
+ *(.sbss)
+ .sbss          0x817019c8        0x4 d:\temp/ccQzbaaa.o
+                                  0x0 (size before relaxing)
+                0x817019c8                font_height
+
+.rela.dyn
+                0x817019cc                __bss_end = .
+                0x817019cc                _end = .
+LOAD d:\temp/ccoDaaaa.o
+LOAD d:\temp/ccC6aaaa.o
+LOAD d:\temp/ccQzbaaa.o
+OUTPUT(Bin/Credits.elf elf32-powerpc)

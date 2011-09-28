@@ -1,0 +1,1 @@
+dolrewrite bootldr.dol
