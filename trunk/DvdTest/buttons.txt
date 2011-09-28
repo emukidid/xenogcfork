@@ -1,0 +1,28 @@
+ok quick button specs:
+
+
+NORMAL MODE:
+A			- read sector
+X / Y			- sector +/- 0x800
+DPAD left right		- sector +/-
+DPAD up down		- scroll sector dump
+L			- do a DVDReset()
+START			- does the std anaconda swap
+Z			- jumps to 0x8070000
+
+HAX0R MODE (hold R):
+L			- do DVDReadId()
+Y			- send anaconda unlock commands
+X			- send custom drivecode		
+DPAD up down		- select drivecode command
+A			- execute drivecode command
+
+
+LBA shows the sector number, below that is the current error code.
+if a command fails, the hexdump gets filled with 0xBB
+
+if you loose sync you just do a DVDReset and a DVDReadId() ( L , R+L)
+
+have fun,
+
+bc
