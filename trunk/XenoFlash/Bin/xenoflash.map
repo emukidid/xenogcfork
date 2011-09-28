@@ -1,0 +1,376 @@
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD D:\Console\GameCube\dev\source\GcLib/crt0.o
+LOAD D:\Console\GameCube\dev\source\GcLib/cache.o
+LOAD D:\Console\GameCube\dev\source\GcLib/GC_Debug.o
+LOAD D:\Console\GameCube\dev\source\GcLib/GC_Video.o
+LOAD D:\Console\GameCube\dev\source\GcLib/GC_String.o
+LOAD D:\Console\GameCube\dev\source\GcLib/GC_Random.o
+LOAD D:\Console\GameCube\dev\source\GcLib/GC_PAD.o
+LOAD D:\Console\GameCube\dev\source\GcLib/GC_Dvd.o
+LOAD D:\Console\GameCube\dev\source\GcLib/GC_Memory.o
+LOAD D:\Console\GameCube\dev\source\GcLib/GC_Time.o
+LOAD D:\Console\GameCube\dev\source\GcLib/GC_vsprintf.o
+LOAD D:\Console\GameCube\dev\source\GcLib/GC_EXI.o
+LOAD main.o
+LOAD title.raw.o
+LOAD d:/Console/GameCube/Dev/devkitPPC/bin/../lib/gcc/powerpc-gekko/3.4.4/../../../../powerpc-gekko/lib\libstdc++.a
+LOAD d:/Console/GameCube/Dev/devkitPPC/bin/../lib/gcc/powerpc-gekko/3.4.4/../../../../powerpc-gekko/lib\libm.a
+LOAD d:/Console/GameCube/Dev/devkitPPC/bin/../lib/gcc/powerpc-gekko/3.4.4\libgcc.a
+LOAD d:/Console/GameCube/Dev/devkitPPC/bin/../lib/gcc/powerpc-gekko/3.4.4\libgcc.a
+LOAD d:/Console/GameCube/Dev/devkitPPC/bin/../lib/gcc/powerpc-gekko/3.4.4/crtsavres.o
+                0x80003100                . = 0x80003100
+
+.text           0x80003100     0x7f40
+ *(.text)
+ .text          0x80003100      0x398 D:\Console\GameCube\dev\source\GcLib/crt0.o
+                0x800032c0                CacheInit
+                0x80003100                _start
+ .text          0x80003498       0xa4 D:\Console\GameCube\dev\source\GcLib/cache.o
+                0x8000352c                GetMSR
+                0x800034c8                dcache_inv
+                0x80003534                SetMSR
+                0x80003498                dcache_flush
+                0x800034f8                flush_code
+ .text          0x8000353c      0xf98 D:\Console\GameCube\dev\source\GcLib/GC_Debug.o
+                0x8000382c                DEBUG_ShowValueU8(short, short, unsigned char)
+                0x80004330                GC_DBG_PrintHexDump(int, void*, int, int)
+                0x80003a6c                DEBUG_ShowValueU16(short, short, unsigned short)
+                0x80004108                DEBUG_Print(short, short, char*)
+                0x800042ac                DEBUG_PrintStatus(char*)
+                0x80003e5c                DbgPrint(char const*, ...)
+                0x800040b0                DEBUG_GetConsoleNewline(short)
+                0x80003bd0                DEBUG_ShowValueU16Named(short, short, unsigned short, char*)
+                0x80003fe4                DEBUG_ResetConsole(int, int)
+                0x800042f0                DEBUG_PrintStatusNoClear(char*)
+                0x80003c8c                DEBUG_ShowValueU32Named(short, short, unsigned long, char*)
+                0x80004260                DEBUG_ClearStatus()
+                0x80003f20                DbgPrintS(char const*, ...)
+                0x80003b24                DEBUG_ShowValueU32(short, short, unsigned long)
+                0x8000353c                DEBUG_SetTextColor(unsigned long)
+                0x80004048                DEBUG_Print(char*)
+                0x80003d38                DEBUG_PrintChar(short, short, char)
+                0x80003568                DEBUG_InitText(unsigned long)
+ .text          0x800044d4      0xed0 D:\Console\GameCube\dev\source\GcLib/GC_Video.o
+                0x80004614                GC_Video_ClearFrameBuffer
+                0x8000483c                GC_Video_WaitForVBlank()
+                0x80004938                GC_Video_RGBToYCbCr(unsigned char, unsigned char, unsigned char)
+                0x80004724                GC_Video_InterruptHandler()
+                0x80004890                GC_Video_SetBlack(unsigned char)
+                0x8000455c                GC_Video_SetFrameBuffer(void*, int)
+                0x800044d4                GC_Video_Init(int)
+                0x800047b4                GC_Video_ClearIF
+ .text          0x800053a4       0x5c D:\Console\GameCube\dev\source\GcLib/GC_String.o
+                0x800053a4                StrLen
+ .text          0x80005400       0x94 D:\Console\GameCube\dev\source\GcLib/GC_Random.o
+                0x80005400                GC_SRand(int)
+                0x8000542c                GC_Rand()
+ .text          0x80005494      0x480 D:\Console\GameCube\dev\source\GcLib/GC_PAD.o
+                0x800056a8                GC_PAD_Read(GC_Pad*, int)
+                0x8000577c                GC_PAD_GetCurrentKeys()
+                0x800058ac                GC_PAD_WaitForKey(unsigned short)
+                0x80005494                GC_PAD_Init()
+                0x80005858                GC_PAD_WaitForAnyKey()
+ *fill*         0x80005914        0xc 00
+ .text          0x80005920     0x1d70 D:\Console\GameCube\dev\source\GcLib/GC_Dvd.o
+                0x80005fd4                DVD_CustomCommandRaw(unsigned long*)
+                0x8000692c                DVD_ReadDriveMemBlock(unsigned long, void*, unsigned long)
+                0x80005ba8                DVD_Status2()
+                0x800062bc                DVD_SetDebugMode()
+                0x800065f0                DVD_StartDrive()
+                0x80006f4c                DVD_Reset()
+                0x80005da8                DVD_AudioEnable()
+                0x8000682c                DVD_ReadDriveMemDword(unsigned long)
+                0x80005e20                DVD_AudioStatus()
+                0x800061bc                DVD_CustomCommandImmediate(char*)
+                0x80005de4                DVD_AudioDisable()
+                0x80005c00                DVD_RequestError()
+                0x80006d68                DVD_Read(void*, unsigned long, unsigned long)
+                0x80005ad0                DVD_WaitBreak()
+                0x80005cdc                DVD_Inquiry(DVD_DRIVEINFO*)
+                0x80005c88                DVD_Seek(unsigned long)
+                0x800072e0                DVD_Anaconda_InjectFirmwareHack()
+                0x800069cc                DVD_WriteDriveMemDword(unsigned long, unsigned long)
+                0x800072a8                DVD_Anaconda_Delay()
+                0x80005e64                DVD_CustomCommand(unsigned long, void*, unsigned long, int)
+                0x80006734                DVD_DisableErrorCorrection()
+                0x80007240                DVD_Anaconda_Delay2()
+                0x80005920                DVD_PrepareCmdState()
+                0x80005bd4                DVD_GetError()
+                0x80006bf0                DVD_ReadId(void*)
+                0x8000717c                DVD_Anaconda_UnlockDrive()
+                0x80005b30                DVD_IsCoverOpen()
+                0x80005994                DVD_Break()
+                0x800066d8                DVD_SetReadOptions(unsigned short)
+                0x800070dc                DVD_Anaconda_ReadDiscId()
+                0x80007000                DVD_SwapToDVDR()
+                0x80005b7c                DVD_Status1()
+                0x80007098                DVD_Anaconda_Reset()
+                0x80007274                DVD_Anaconda_Delay8()
+                0x80005c4c                DVD_Stop()
+                0x800059bc                DVD_WaitImmediate()
+                0x80005a38                DVD_WaitDMA()
+                0x800064d4                DVD_CustomDbgCommand(unsigned long, unsigned long, unsigned long, unsigned long*)
+                0x800063e4                DVD_SetDebugMode2()
+                0x800062f4                DVD_SetDebugMode1()
+                0x80006b0c                DVD_WriteDriveMemBlock(unsigned long, void*, unsigned long)
+                0x80006ba8                DVD_CallFunc(unsigned long)
+ .text          0x80007690      0x3dc D:\Console\GameCube\dev\source\GcLib/GC_Memory.o
+                0x800077d8                GC_Memory_DCZeroRange
+                0x800077ac                GC_Memory_DCInvalidateRange
+                0x800076e8                GC_Memory_CachedToPhysical
+                0x80007714                GC_Memory_UncachedToPhysical
+                0x80007690                GC_Memory_PhysicalToCached
+                0x80007740                GC_Memory_CachedToUncached
+                0x80007864                GC_Memory_ICInvalidateRange
+                0x800076bc                GC_Memory_PhysicalToUncached
+                0x80007928                GC_Memory_memset
+                0x80007804                GC_Memory_DCFlushRange
+                0x80007798                GC_Memory_ICFreeze
+                0x8000789c                GC_Memory_memcpy
+                0x8000776c                GC_Memory_UncachedToCached
+                0x80007834                GC_Memory_DCFlushRangeNoSync
+                0x8000799c                GC_Memory_memcmp
+ .text          0x80007a6c      0x3ec D:\Console\GameCube\dev\source\GcLib/GC_Time.o
+                0x80007dac                GC_Sleep(unsigned long)
+                0x80007b50                GC_SleepVB(unsigned long)
+                0x80007a6c                GC_GetTime
+                0x80007bb0                tb_diff_msec(tb_t*, tb_t*)
+                0x80007afc                GC_Time_ConvertToSystemTime(long long)
+                0x80007a84                GC_Time_GetSystemTime()
+                0x80007c58                tb_diff_usec(tb_t*, tb_t*)
+                0x80007d00                GC_SleepUS(unsigned long)
+ .text          0x80007e58     0x1114 D:\Console\GameCube\dev\source\GcLib/GC_vsprintf.o
+                0x800083b0                vsprintf
+                0x80008eb8                sprintf
+ .text          0x80008f6c      0xed0 D:\Console\GameCube\dev\source\GcLib/GC_EXI.o
+                0x800097d0                exi_request_irq
+                0x80009bb4                exi_read
+                0x80009254                exi_imm_ex
+                0x8000977c                exi_init
+                0x80009d8c                GC_EXI_RetrieveID(unsigned long, unsigned long)
+                0x80009c00                exi_write
+                0x80009020                exi_deselect
+                0x80009300                exi_dma_start
+                0x800094f4                exi_refresh_enable()
+                0x800093a4                exi_imm_fast
+                0x80009d2c                GC_EXI_Probe(unsigned long)
+                0x8000917c                exi_sync
+                0x80009084                exi_imm
+                0x80008f6c                exi_select
+                0x80009c4c                exi_rw
+                0x800099f8                exi_free_irq
+                0x80009560                exi_interrupt_handler(int, void*)
+ *fill*         0x80009e3c        0x4 00
+ .text          0x80009e40     0x1020 main.o
+                0x8000a720                UnloadXenoGC_Permanent()
+                0x8000a68c                CMD_InjectCustomDriveCode()
+                0x8000a774                CheckDriveState(bool)
+                0x8000a548                LoadDol(void*, unsigned long)
+                0x8000ab6c                DrawTitle()
+                0x8000a320                LoadBinary(void*, unsigned long, unsigned long)
+                0x8000a2b4                GC_Startup()
+                0x8000a9b0                SetFlashAddress(unsigned long)
+                0x8000a3a8                fn_load_dol_fn_inmem(void*)
+                0x8000a8dc                FlashInit()
+                0x8000acd4                main
+                0x8000a948                FlashErase()
+                0x8000aa1c                FlashUpdate()
+                0x8000a878                IsXenoDrivecode()
+                0x8000a604                CalcChecksum(void*, unsigned long)
+                0x8000ac54                InitDrive()
+ .text          0x8000ae60      0x1e0 d:/Console/GameCube/Dev/devkitPPC/bin/../lib/gcc/powerpc-gekko/3.4.4/crtsavres.o
+                0x8000af54                _restgpr_18
+                0x8000b02c                _restgpr_31_x
+                0x8000af74                _restgpr_26
+                0x8000aee0                _savegpr_27
+                0x8000af6c                _restgpr_24
+                0x8000b00c                _restgpr_23_x
+                0x8000af04                _restfpr_17
+                0x8000af48                _restgpr_15
+                0x8000afbc                _restfpr_25_x
+                0x8000afec                _restgpr_15_x
+                0x8000af1c                _restfpr_23
+                0x8000af70                _restgpr_25
+                0x8000aeac                _savegpr_14
+                0x8000afa0                _restfpr_18_x
+                0x8000ae68                _savefpr_16
+                0x8000af88                _restgpr_31
+                0x8000af98                _restfpr_16_x
+                0x8000affc                _restgpr_19_x
+                0x8000ae7c                _savefpr_21
+                0x8000aeb0                _savegpr_15
+                0x8000b028                _restgpr_30_x
+                0x8000aff4                _restgpr_17_x
+                0x8000ae98                _savefpr_28
+                0x8000b024                _restgpr_29_x
+                0x8000af2c                _restfpr_27
+                0x8000afc4                _restfpr_27_x
+                0x8000afd4                _restfpr_31_x
+                0x8000af0c                _restfpr_19
+                0x8000afb8                _restfpr_24_x
+                0x8000aee4                _savegpr_28
+                0x8000aedc                _savegpr_26
+                0x8000af44                _restgpr_14
+                0x8000ae64                _savefpr_15
+                0x8000ae94                _savefpr_27
+                0x8000af94                _restfpr_15_x
+                0x8000aefc                _restfpr_15
+                0x8000afb4                _restfpr_23_x
+                0x8000ae80                _savefpr_22
+                0x8000af14                _restfpr_21
+                0x8000af90                _restfpr_14_x
+                0x8000af60                _restgpr_21
+                0x8000ae6c                _savefpr_17
+                0x8000af24                _restfpr_25
+                0x8000af18                _restfpr_22
+                0x8000b008                _restgpr_22_x
+                0x8000ae60                _savefpr_14
+                0x8000b018                _restgpr_26_x
+                0x8000b020                _restgpr_28_x
+                0x8000aed8                _savegpr_25
+                0x8000afd0                _restfpr_30_x
+                0x8000b014                _restgpr_25_x
+                0x8000b010                _restgpr_24_x
+                0x8000aec8                _savegpr_21
+                0x8000ae78                _savefpr_20
+                0x8000af7c                _restgpr_28
+                0x8000aef8                _restfpr_14
+                0x8000ae9c                _savefpr_29
+                0x8000af58                _restgpr_19
+                0x8000af5c                _restgpr_20
+                0x8000aff8                _restgpr_18_x
+                0x8000afac                _restfpr_21_x
+                0x8000aea4                _savefpr_31
+                0x8000aec4                _savegpr_20
+                0x8000af80                _restgpr_29
+                0x8000aebc                _savegpr_18
+                0x8000ae74                _savefpr_19
+                0x8000af30                _restfpr_28
+                0x8000af28                _restfpr_26
+                0x8000aeb8                _savegpr_17
+                0x8000afc8                _restfpr_28_x
+                0x8000af10                _restfpr_20
+                0x8000af9c                _restfpr_17_x
+                0x8000aea0                _savefpr_30
+                0x8000ae8c                _savefpr_25
+                0x8000aef0                _savegpr_31
+                0x8000aed0                _savegpr_23
+                0x8000ae88                _savefpr_24
+                0x8000afcc                _restfpr_29_x
+                0x8000ae70                _savefpr_18
+                0x8000aee8                _savegpr_29
+                0x8000afa4                _restfpr_19_x
+                0x8000af78                _restgpr_27
+                0x8000af64                _restgpr_22
+                0x8000aed4                _savegpr_24
+                0x8000afc0                _restfpr_26_x
+                0x8000af08                _restfpr_18
+                0x8000aec0                _savegpr_19
+                0x8000af00                _restfpr_16
+                0x8000afe8                _restgpr_14_x
+                0x8000ae84                _savefpr_23
+                0x8000af38                _restfpr_30
+                0x8000aeb4                _savegpr_16
+                0x8000afa8                _restfpr_20_x
+                0x8000af34                _restfpr_29
+                0x8000af20                _restfpr_24
+                0x8000aeec                _savegpr_30
+                0x8000b004                _restgpr_21_x
+                0x8000af84                _restgpr_30
+                0x8000afb0                _restfpr_22_x
+                0x8000aff0                _restgpr_16_x
+                0x8000b01c                _restgpr_27_x
+                0x8000aecc                _savegpr_22
+                0x8000af4c                _restgpr_16
+                0x8000af68                _restgpr_23
+                0x8000af50                _restgpr_17
+                0x8000ae90                _savefpr_26
+                0x8000b000                _restgpr_20_x
+                0x8000af3c                _restfpr_31
+
+.gnu.linkonce.t._Z14GC_System_Initv
+                0x8000b040       0x5c
+ .gnu.linkonce.t._Z14GC_System_Initv
+                0x8000b040       0x5c main.o
+                0x8000b040                GC_System_Init()
+
+.data           0x8000b09c       0x60
+ *(.data)
+ .data          0x8000b09c       0x60 D:\Console\GameCube\dev\source\GcLib/GC_Debug.o
+
+.sdata          0x8000b100    0x28e20
+ *(.sdata)
+ .sdata         0x8000b100        0x4 D:\Console\GameCube\dev\source\GcLib/GC_Random.o
+                0x8000b100                g_nRandomSeed
+ .sdata         0x8000b104        0x8 D:\Console\GameCube\dev\source\GcLib/GC_Dvd.o
+                0x8000b108                drivemodel
+                0x8000b104                dvd
+ *fill*         0x8000b10c       0x14 00
+ .sdata         0x8000b120    0x28e00 main.o
+                0x80033f04                g_pGCOs15End
+                0x80033f00                g_pGCOs15
+                0x8000cf94                g_pXenoROM
+                0x8000b120                g_pFlashloader
+                0x8000cf98                g_pXenoROMEnd
+                0x8000b124                g_pFlashloaderEnd
+
+.rodata         0x80033f20    0x4b528
+ *(.rodata)
+ .rodata        0x80033f20     0x6104 D:\Console\GameCube\dev\source\GcLib/GC_Debug.o
+ *fill*         0x8003a024        0x4 00
+ .rodata        0x8003a028      0x1f0 D:\Console\GameCube\dev\source\GcLib/GC_Video.o
+ .rodata        0x8003a218       0x90 D:\Console\GameCube\dev\source\GcLib/GC_Dvd.o
+ .rodata        0x8003a2a8      0x100 D:\Console\GameCube\dev\source\GcLib/GC_Memory.o
+ .rodata        0x8003a3a8      0x1ec D:\Console\GameCube\dev\source\GcLib/GC_vsprintf.o
+ .rodata        0x8003a594      0x2b4 main.o
+ .rodata        0x8003a848    0x44c00 title.raw.o
+                0x8003a848                title_Bitmap
+
+.sdata2         0x8007f448        0x0
+                0x8007f448                __bss_start = .
+
+.bss            0x8007f448     0x2454
+ *(.bss)
+ .bss           0x8007f448      0x400 D:\Console\GameCube\dev\source\GcLib/GC_Debug.o
+ .bss           0x8007f848       0x54 D:\Console\GameCube\dev\source\GcLib/GC_EXI.o
+ .bss           0x8007f89c     0x2000 main.o
+                0x8007f89c                pBuffer
+
+.sbss           0x8008189c       0x24
+ *(.sbss)
+ .sbss          0x8008189c        0x8 D:\Console\GameCube\dev\source\GcLib/GC_Debug.o
+                0x800818a0                g_nConsoleX
+                0x800818a2                g_nConsoleY
+ .sbss          0x800818a4        0xc D:\Console\GameCube\dev\source\GcLib/GC_Video.o
+                0x800818ac                secondCount
+                0x800818a4                g_pFrameBuffer
+                0x800818a8                frameCount
+ .sbss          0x800818b0        0x1 D:\Console\GameCube\dev\source\GcLib/GC_Dvd.o
+                0x800818b0                g_bRequestBreak
+ *fill*         0x800818b1        0x3 00
+ .sbss          0x800818b4        0xc D:\Console\GameCube\dev\source\GcLib/GC_EXI.o
+
+.rela.dyn
+                0x800818c0                __bss_end = .
+                0x800818c0                _end = .
+OUTPUT(bin/xenoflash_tmp.elf elf32-powerpc)
+
+.comment        0x00000000       0xc6
+ .comment       0x00000000       0x12 D:\Console\GameCube\dev\source\GcLib/GC_Debug.o
+ .comment       0x00000012       0x12 D:\Console\GameCube\dev\source\GcLib/GC_Video.o
+ .comment       0x00000024       0x12 D:\Console\GameCube\dev\source\GcLib/GC_String.o
+ .comment       0x00000036       0x12 D:\Console\GameCube\dev\source\GcLib/GC_Random.o
+ .comment       0x00000048       0x12 D:\Console\GameCube\dev\source\GcLib/GC_PAD.o
+ .comment       0x0000005a       0x12 D:\Console\GameCube\dev\source\GcLib/GC_Memory.o
+ .comment       0x0000006c       0x12 D:\Console\GameCube\dev\source\GcLib/GC_Time.o
+ .comment       0x0000007e       0x12 D:\Console\GameCube\dev\source\GcLib/GC_vsprintf.o
+ .comment       0x00000090       0x12 D:\Console\GameCube\dev\source\GcLib/GC_EXI.o
+ .comment       0x000000a2       0x12 main.o
+ .comment       0x000000b4       0x12 title.raw.o

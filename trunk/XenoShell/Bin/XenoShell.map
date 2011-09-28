@@ -1,0 +1,76 @@
+
+Allocating common symbols
+Common symbol       size              file
+
+g_aMBTable          0x50              d:\temp/cc8Acaaa.o
+font_size           0x400             d:\temp/cc8Acaaa.o
+font_height         0x4               d:\temp/cc8Acaaa.o
+font_offset         0x400             d:\temp/cc8Acaaa.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+                0x81700000                . = 0x81700000
+
+.text           0x81700000      0xce8
+ *(.text)
+ .text          0x81700000       0x26 d:\temp/ccEnbaaa.o
+                0x81700004                szDriveVer
+                0x81700016                GetMSR
+                0x81700000                _start
+                0x8170001e                SetMSR
+ *fill*         0x81700026        0x2 00
+ .text          0x81700028      0xcc0 d:\temp/cc8Acaaa.o
+                0x81700654                main
+                0x817005b8                InitSystem
+                0x81700290                fn_load_dol_fn_inmem
+
+.data           0x81700ce8      0x100
+ *(.data)
+ .data          0x81700ce8      0x100 d:\temp/cc8Acaaa.o
+
+.sdata          0x81700de8       0x10
+ *(.sdata)
+ .sdata         0x81700de8       0x10 d:\temp/cc8Acaaa.o
+                0x81700dec                dvd
+                0x81700df4                fb
+                0x81700df0                g_nX
+                0x81700de8                ebase
+
+.rodata         0x81700df8       0xc0
+ *(.rodata)
+ .rodata        0x81700df8       0xc0 d:\temp/cc8Acaaa.o
+
+.rodata.str1.4  0x81700eb8       0x48
+ .rodata.str1.4
+                0x81700eb8       0x48 d:\temp/cc8Acaaa.o
+                                 0x4c (size before relaxing)
+                0x81700f00                __bss_start = .
+
+.bss            0x81700f00      0x850
+ *(.bss)
+ COMMON         0x81700f00      0x850 d:\temp/cc8Acaaa.o
+                                  0x0 (size before relaxing)
+                0x81700f00                g_aMBTable
+                0x81700f50                font_size
+                0x81701350                font_offset
+
+.sbss           0x81701750        0x8
+ *(.sbss)
+ .sbss          0x81701750        0x2 d:\temp/cc8Acaaa.o
+                0x81701750                g_nY
+ *fill*         0x81701752        0x2 00
+ .sbss          0x81701754        0x4 d:\temp/cc8Acaaa.o
+                                  0x0 (size before relaxing)
+                0x81701754                font_height
+
+.rela.dyn
+                0x81701758                __bss_end = .
+                0x81701758                _end = .
+LOAD d:\temp/ccEnbaaa.o
+LOAD d:\temp/cc8Acaaa.o
+OUTPUT(Bin/XenoShell.elf elf32-powerpc)
