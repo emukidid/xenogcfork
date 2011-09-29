@@ -1,11 +1,24 @@
+Archive member included because of file (symbol)
+
+c:/devkitpro/devkitppc/bin/../lib/gcc/powerpc-eabi/4.6.1\libgcc.a(crtresxgpr.o)
+                              C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o (_restgpr_19_x)
 
 Allocating common symbols
 Common symbol       size              file
 
-g_aMBTable          0x50              d:\temp/cc8Acaaa.o
-font_size           0x400             d:\temp/cc8Acaaa.o
-font_height         0x4               d:\temp/cc8Acaaa.o
-font_offset         0x400             d:\temp/cc8Acaaa.o
+g_aMBTable          0x50              C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o
+font_size           0x400             C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o
+font_height         0x4               C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o
+font_offset         0x400             C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o
+
+Discarded input sections
+
+ .data          0x00000000        0x0 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccL8gwGo.o
+ .bss           0x00000000        0x0 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccL8gwGo.o
+ .bss           0x00000000        0x0 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o
+ .data          0x00000000        0x0 c:/devkitpro/devkitppc/bin/../lib/gcc/powerpc-eabi/4.6.1\libgcc.a(crtresxgpr.o)
+ .bss           0x00000000        0x0 c:/devkitpro/devkitppc/bin/../lib/gcc/powerpc-eabi/4.6.1\libgcc.a(crtresxgpr.o)
+ .eh_frame      0x00000000       0x7c c:/devkitpro/devkitppc/bin/../lib/gcc/powerpc-eabi/4.6.1\libgcc.a(crtresxgpr.o)
 
 Memory Configuration
 
@@ -14,63 +27,104 @@ Name             Origin             Length             Attributes
 
 Linker script and memory map
 
+LOAD c:/devkitpro/devkitppc/bin/../lib/gcc/powerpc-eabi/4.6.1\libgcc.a
                 0x81700000                . = 0x81700000
 
-.text           0x81700000      0xce8
+.text           0x81700000      0x5b8
  *(.text)
- .text          0x81700000       0x26 d:\temp/ccEnbaaa.o
-                0x81700004                szDriveVer
-                0x81700016                GetMSR
+ .text          0x81700000       0x66 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccL8gwGo.o
                 0x81700000                _start
-                0x8170001e                SetMSR
- *fill*         0x81700026        0x2 00
- .text          0x81700028      0xcc0 d:\temp/cc8Acaaa.o
-                0x81700654                main
-                0x817005b8                InitSystem
-                0x81700290                fn_load_dol_fn_inmem
+                0x81700008                __eabi
+                0x8170000c                GetMSR
+                0x81700014                SetMSR
+                0x8170001c                dcache_flush_icache_inv
+                0x81700054                szDriveVer
+ *fill*         0x81700066        0x2 00
+ .text          0x81700068      0x4f8 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o
+                0x817003fc                fn_load_dol_fn_inmem
+                0x817004cc                InitSystem
+ .text          0x81700560       0x58 c:/devkitpro/devkitppc/bin/../lib/gcc/powerpc-eabi/4.6.1\libgcc.a(crtresxgpr.o)
+                0x81700560                _restgpr_14_x
+                0x81700564                _restgpr_15_x
+                0x81700568                _restgpr_16_x
+                0x8170056c                _restgpr_17_x
+                0x81700570                _restgpr_18_x
+                0x81700574                _restgpr_19_x
+                0x81700578                _restgpr_20_x
+                0x8170057c                _restgpr_21_x
+                0x81700580                _restgpr_22_x
+                0x81700584                _restgpr_23_x
+                0x81700588                _restgpr_24_x
+                0x8170058c                _restgpr_25_x
+                0x81700590                _restgpr_26_x
+                0x81700594                _restgpr_27_x
+                0x81700598                _restgpr_28_x
+                0x8170059c                _restgpr_29_x
+                0x817005a0                _restgpr_30_x
+                0x817005a4                _restgpr_31_x
 
-.data           0x81700ce8      0x100
+.glink          0x817005b8        0x0
+ .glink         0x00000000        0x0 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccL8gwGo.o
+
+.text.startup   0x817005b8      0x4c0
+ .text.startup  0x817005b8      0x4c0 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o
+                0x817005b8                main
+
+.data           0x81700a78      0x100
  *(.data)
- .data          0x81700ce8      0x100 d:\temp/cc8Acaaa.o
+ .data          0x81700a78      0x100 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o
 
-.sdata          0x81700de8       0x10
+.sdata          0x81700b78       0x14
  *(.sdata)
- .sdata         0x81700de8       0x10 d:\temp/cc8Acaaa.o
-                0x81700dec                dvd
-                0x81700df4                fb
-                0x81700df0                g_nX
-                0x81700de8                ebase
+ .sdata         0x81700b78       0x14 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o
+                0x81700b78                ebase
+                0x81700b7c                dvd
+                0x81700b80                g_nX
+                0x81700b84                vidHeight
+                0x81700b88                fb
 
-.rodata         0x81700df8       0xc0
+.rodata         0x81700b8c       0xc0
  *(.rodata)
- .rodata        0x81700df8       0xc0 d:\temp/cc8Acaaa.o
+ .rodata        0x81700b8c       0xc0 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o
+                0x81700c4c                __bss_start = .
 
-.rodata.str1.4  0x81700eb8       0x48
- .rodata.str1.4
-                0x81700eb8       0x48 d:\temp/cc8Acaaa.o
-                                 0x4c (size before relaxing)
-                0x81700f00                __bss_start = .
+.rodata.str1.1  0x81700c4c       0xcc
+ .rodata.str1.1
+                0x81700c4c       0xcc C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o
+                                 0xce (size before relaxing)
 
-.bss            0x81700f00      0x850
+.eh_frame_hdr   0x81700d18        0x0
+ .eh_frame_hdr  0x00000000        0x0 c:/devkitpro/devkitppc/bin/../lib/gcc/powerpc-eabi/4.6.1\libgcc.a(crtresxgpr.o)
+
+.rela.dyn       0x81700d18        0x0
+ .rela.iplt     0x00000000        0x0 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccL8gwGo.o
+ .rela.text     0x00000000        0x0 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccL8gwGo.o
+ .rela.text.startup
+                0x00000000        0x0 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccL8gwGo.o
+
+.bss            0x81700d20      0x850
  *(.bss)
- COMMON         0x81700f00      0x850 d:\temp/cc8Acaaa.o
-                                  0x0 (size before relaxing)
-                0x81700f00                g_aMBTable
-                0x81700f50                font_size
-                0x81701350                font_offset
+ COMMON         0x81700d20      0x850 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o
+                0x81700d20                g_aMBTable
+                0x81700d70                font_size
+                0x81701170                font_offset
 
-.sbss           0x81701750        0x8
+.iplt           0x81701570        0x0
+ .iplt          0x00000000        0x0 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccL8gwGo.o
+
+.sbss           0x81701570        0x8
  *(.sbss)
- .sbss          0x81701750        0x2 d:\temp/cc8Acaaa.o
-                0x81701750                g_nY
- *fill*         0x81701752        0x2 00
- .sbss          0x81701754        0x4 d:\temp/cc8Acaaa.o
-                                  0x0 (size before relaxing)
-                0x81701754                font_height
-
-.rela.dyn
-                0x81701758                __bss_end = .
-                0x81701758                _end = .
-LOAD d:\temp/ccEnbaaa.o
-LOAD d:\temp/cc8Acaaa.o
+ .sbss          0x00000000        0x0 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccL8gwGo.o
+ .sbss          0x81701570        0x8 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o
+                0x81701570                g_nY
+                0x81701574                font_height
+                0x81701578                __bss_end = .
+                0x81701578                _end = .
+LOAD C:\DOCUME~1\Nick\LOCALS~1\Temp\ccL8gwGo.o
+LOAD C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o
+LOAD c:/devkitpro/devkitppc/bin/../lib/gcc/powerpc-eabi/4.6.1\libgcc.a
 OUTPUT(Bin/XenoShell.elf elf32-powerpc)
+
+.comment        0x00000000       0x22
+ .comment       0x00000000       0x22 C:\DOCUME~1\Nick\LOCALS~1\Temp\ccoSRnFI.o
+                                 0x23 (size before relaxing)
