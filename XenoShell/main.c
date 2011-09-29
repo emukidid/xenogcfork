@@ -6,33 +6,35 @@
   * Continued by www.gc-forever.com members
   * emu_kidid, ...
   */
+
 #include "main.h"
-#define RELEASE
+
+/*** global variable definitions ***/
 
 #define HEIGHT_NTSC 480
 #define HEIGHT_PAL 576
+
+/*** memcard mode ***/
+#define MCMODE 1
 
 u32 *fb = (u32*) (MEM_FB2 + YBORDEROFFSET);
 u32 vidHeight = HEIGHT_NTSC;
 u32 g_aMBTable[0x50 / 4] __attribute__((aligned(32)));
 u16 g_nX = 32, g_nY = 0;
 
-volatile long *dvd=(volatile long *)0xCC006000;
+/*** set exi base address ***/
+volatile u32* ebase = (u32*) 0xCC006800;
+int font_offset[256], font_size[256], font_height;
+
+volatile long *dvd = (volatile long *) 0xCC006000;
+
+/*** extern function definitions ***/
 
 extern long GetMSR();
 extern void SetMSR(long);
 extern void dcache_flush_icache_inv(void *, int);
 
-static void load_apploader();
-static void memcpy32(u32* pDest, u32* pSrc, u32 dwSize);
-static void memset32(u32* pDest, u32 dwVal, u32 dwSize);
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//															EXI / IPL Font stuff
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-volatile u32* ebase = (u32*) 0xCC006800;
-int font_offset[256], font_size[256], font_height;
+/*** exi / ipl font stuff ***/
 
 static void exi_select(void)
 {
@@ -67,7 +69,7 @@ static void exi_read(unsigned char *dst, int len)
 	}
 }
 
-static  void ipl_read(unsigned char *dst, int address, int len)
+static void ipl_read(unsigned char *dst, int address, int len)
 {
 	while (len)	{
 		exi_select();
@@ -113,8 +115,9 @@ static void untile(unsigned char *dst, unsigned char *src, int xres, int yres)
 		}
 }
 
-/* Yay0 decompression */
-static  void yay0_decode(void *s, void *d)
+/*** Yay0 decompression ***/
+
+static void yay0_decode(void *s, void *d)
 {
 	int i, j, k, p, q, cnt;
 
@@ -215,6 +218,8 @@ static void init_font(void)
 	font_height = fnt->cell_height;
 }
 
+/*** framebuffer stuff ***/
+
 static void blit_char(u16 x, u16 y, unsigned char c)
 {
 	unsigned char *fnt = ((unsigned char*)MEM_FONT) + font_offset[c];
@@ -248,7 +253,7 @@ static void print(const char *string)
 		}
 		else {
 			blit_char(g_nX, g_nY, *string);
-			g_nX += font_size[*string]-2;
+			g_nX += font_size[(int) *string]-2;
 		}
 		
 		string++;
@@ -259,7 +264,7 @@ static void print(const char *string)
 	}
 }
 
-/*
+/* unused
 static const char numToChar[] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
 static void printInt(u32 x) {
@@ -274,14 +279,19 @@ static void printInt(u32 x) {
 			printedYet=1;
 		}
 	}
-}*/
+}
+*/
 
+/*** system and memory stuff ***/
+
+/* unused
 static void memcpy32(u32* pDest, u32* pSrc, u32 dwSize)
 {
 	while(dwSize -=4 ) {
 		*pDest++ = *pSrc++;
 	}
 }
+*/
 
 static void memset32(u32* pDest, u32 dwVal, u32 dwSize)
 {
@@ -323,9 +333,8 @@ static void GC_Sleep(u32 dwMiliseconds)
 	}
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//												Memcard / Dol loading
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/*** dol loading from memcard ***/
+
 void fn_load_dol_fn_inmem(void *dol)
 {
 	struct dol_s {
@@ -365,16 +374,15 @@ void fn_load_dol_fn_inmem(void *dol)
 static void ReadMemcardBlockX(u32 dwOffset, void *pData, u32 dwSize)
 {
 	u8 pCMD[4];
-	u32 dwDummy = 0;
 
 	EXI_SR |= ((1<<0)<<7) | (4 << 4);
 
  	// read command and block offset 31-8
 	pCMD[0] = 0x52;
-    pCMD[1] = (dwOffset >> 17) & 0x3F;
-    pCMD[2] = (dwOffset >> 9) & 0xFF;
-    pCMD[3] = (dwOffset >> 7) & 3;
-	exi_write_word(*((u32*) pCMD));
+	pCMD[1] = (dwOffset >> 17) & 0x3F;
+	pCMD[2] = (dwOffset >> 9) & 0xFF;
+	pCMD[3] = (dwOffset >> 7) & 3;
+	exi_write_word((u32) pCMD);
 	
 	// block offset 7-0
 	EXI_DATA = (dwOffset & 0x7F);
@@ -389,10 +397,8 @@ static void ReadMemcardBlockX(u32 dwOffset, void *pData, u32 dwSize)
 	EXI_SR &= ~0x80;
 }
 
+/*** dvd stuff ***/
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//															DVD routines
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 static int DVD_WaitImmediate()
 {
 	u32 nCount = 0;
@@ -446,11 +452,14 @@ static int DVD_ReadId(void *pDst)
 		if (!dvd[6])
 			return 0;
 	}
+
+  return 0; /*** keep gcc happy ***/
 }
 
 static int DVD_Read(void *pDst, u32 dwBytes, u32 dwOffset)
 {
-	dvd[0] = 0x2E;			// 0x54; 0x2E;	dvd[0] |= 0x10;
+	dvd[0] = 0x2E; // 0x54;
+	//dvd[0] |= 0x10;
 	dvd[1] = 0;
 	
 	dvd[2] = 0xA8000000;
@@ -474,12 +483,12 @@ static int DVD_Read(void *pDst, u32 dwBytes, u32 dwOffset)
 			return 0;
 		}
 	}
+
+  return 0; /*** keep gcc happy ***/
 }
 
+/*** video modes ***/
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//														video mode
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 static const u32 GC_VI_MODE_IRegs_PAL[16] = {
 	0x11F50101, 0x4B6A01B0, 0x02F85640, 0x00010023,
 	0x00000024, 0x4D2B4D6D, 0x4D8A4D4C, 0x00000000,
@@ -502,6 +511,8 @@ static const u32 GC_VI_MODE_IRegs_Common[16] = {
 	0x02800000, 0x000000FF, 0x00FF00FF, 0x00FF00FF
 };
 
+/*** helper functions ***/
+
 static void InitVideo(u32* pData)
 {
 	int i;
@@ -516,6 +527,51 @@ static void InitVideo(u32* pData)
 	// fake init video
 	R_VIDEO_FRAMEBUFFER_1 =  MEM_FB;
 	R_VIDEO_FRAMEBUFFER_2 =  MEM_FB2;
+}
+
+void InitSystem( unsigned long VidMode )
+{
+	*(unsigned short*)0x800030e0 = 6;				// production pads
+
+	static u32 GC_DefaultConfig[64] =
+	{
+		0x0D15EA5E,0x00000001,0x01800000,0x00000003, //  0.. 3 80000020
+		0x00000000,0x816FFFF0,0x817FE8C0,0x00000024, //  4.. 7 80000030
+		0x00000000,0x00000000,0x00000000,0x00000000, //  8..11 80000040
+		0x00000000,0x00000000,0x00000000,0x00000000, // 12..15 80000050
+		0x38A00040,0x7C6802A6,0x9065000C,0x80650008, // 16..19 80000060
+		0x64638000,0x7C6803A6,0x38600030,0x7C600124, // 20..23 80000070
+		0x4E800020,0x00000000,0x00000000,0x00000000, // 24..27 80000080
+		0x00000000,0x00000000,0x00000000,0x00000000, // 28..31 80000090
+		0x00000000,0x00000000,0x00000000,0x00000000, // 32..35 800000A0
+		0x00000000,0x00000000,0x00000000,0x00000000, // 36..39 800000B0
+		0x015D47F8,0xF8248360,0x00000000,0x00000001, // 40..43 800000C0
+		0x00000000,0x00000000,0x00000000,0x00000000, // 44..47 800000D0
+		0x814B7F50,0x815D47F8,0x00000000,0x81800000, // 48..51 800000E0
+		0x01800000,0x817FC8C0,0x09A7EC80,0x1CF7C580  // 52..55 800000F0
+	};
+
+	u32 Counter=0;
+	u32 *pSrcAddr=GC_DefaultConfig;
+	u32 *pDstAddr=GC_INIT_BASE_PTR;
+
+	GC_DefaultConfig[43] = VidMode;
+
+	for(Counter=0; Counter<56; Counter++) {
+		pDstAddr[Counter] = pSrcAddr[Counter];
+	}
+
+	if( VidMode == 1 )	{
+		InitVideo((u32*)GC_VI_MODE_IRegs_PAL);
+		vidHeight = HEIGHT_PAL;
+	}
+	else {
+		InitVideo((u32*) GC_VI_MODE_IRegs_NTSC);
+		vidHeight = HEIGHT_NTSC;
+	}
+}
+
+static void report(const char* szMsg, ...) {
 }
 
 static u16 ShowMultibootGames()
@@ -551,6 +607,44 @@ static u16 ShowMultibootGames()
 	return nGames;
 }
 
+static void load_apploader()
+{
+	void (*app_init)(void (*report)(const char *fmt, ...));
+	int  (*app_main)(void **dst, int *size, int *offset);
+	void *(*app_final)();
+	void (*app_entry)(void(**init)(void (*report)(const char *fmt, ...)), int (**main)(), void *(**final)());
+
+	u8 *buffer = (u8*)0xC0100000;
+
+	cls();
+	DVD_Read(buffer,0x460,0);
+	print("\nLoading...");
+
+	InitSystem((buffer[0x45b] == 2) ? 1 : 0);
+
+	DVD_Read(buffer, 0x20, 0x2440);
+	DVD_Read((void*)0x81200000, ((*(unsigned long*)(buffer+0x14)) + 31) &~31,0x2460);
+
+	app_entry = (void (*)(void(**)(void (*)(const char*,...)),int (**)(),void *(**)()))(*(unsigned long*)(buffer + 0x10));
+	app_entry(&app_init,( int (**)()) &app_main,&app_final);
+	app_init((void (*)(const char*,...))report);
+	
+	for(;;) {
+		void *dst = 0;
+		int len = 0, offset = 0;
+		int res = app_main(&dst, &len, &offset);
+
+		if (!res) break;
+		DVD_Read(dst, len, offset);
+	}
+
+	/*** jump to entry point ***/
+	void (*entrypoint)() = (void (*)()) app_final();
+	entrypoint();
+}
+
+/*** do the actual menu ***/
+
 int main(void)
 {
 	memset32((void*)0x80000004, 0, (0x01700000-4)/4);
@@ -559,6 +653,8 @@ int main(void)
 	ipl_set_config();
 	ipl_read((unsigned char*)MEM_TEMP, 0, 256);
 	init_font();
+
+	/*** init video system with proper video mode ***/
 	InitSystem(*(u8*)(MEM_TEMP+0x55) == 'P');
 	cls();
 	
@@ -567,7 +663,7 @@ int main(void)
 	print("\n--------------\n");
 
 	/* Boot a DOL from Memory Card (user held Z before we started up) */
-	if(*((u32*)0x80000000) == 0x2badc0de) {
+	if(*((u32*)0x80000000) == 0x2badc0de || MCMODE==1) {
 		const u32 dwLoadPos = 0x80800000;
 
 		int nOffset = 0;
@@ -598,7 +694,7 @@ int main(void)
 				if(memcmp32((u32*) (pDest+nDolOffset), (u32*)"Dolphin Application", 20) == 1) {
 					g_nX = 0;
 					print("Found DOL:\n");
-					print(pDest+nDolOffset+0x20);
+					print((char *) pDest+nDolOffset+0x20);
 					print("\n");
 					pDest -= (nDolOffset+0x100);
 					print("Press A to Boot\n");
@@ -623,7 +719,8 @@ int main(void)
 			nOffset += BLOCK_SIZE;
 		}
 	}
-	else {
+	else
+	{
 		/* Multi Game Shell */
 		while(DVD_ReadId((void*) 0xC0000000)) {
 			GC_Sleep(500);
@@ -688,85 +785,6 @@ int main(void)
 			}
 		}
 	}
-}
 
-static void report(const char* szMsg, ...) {
-}
-
-void InitSystem( unsigned long VidMode )
-{
-	*(unsigned short*)0x800030e0 = 6;				// production pads
-
-	static u32 GC_DefaultConfig[64] =
-	{
-		0x0D15EA5E,0x00000001,0x01800000,0x00000003, //  0.. 3 80000020
-		0x00000000,0x816FFFF0,0x817FE8C0,0x00000024, //  4.. 7 80000030
-		0x00000000,0x00000000,0x00000000,0x00000000, //  8..11 80000040
-		0x00000000,0x00000000,0x00000000,0x00000000, // 12..15 80000050
-		0x38A00040,0x7C6802A6,0x9065000C,0x80650008, // 16..19 80000060
-		0x64638000,0x7C6803A6,0x38600030,0x7C600124, // 20..23 80000070
-		0x4E800020,0x00000000,0x00000000,0x00000000, // 24..27 80000080
-		0x00000000,0x00000000,0x00000000,0x00000000, // 28..31 80000090
-		0x00000000,0x00000000,0x00000000,0x00000000, // 32..35 800000A0
-		0x00000000,0x00000000,0x00000000,0x00000000, // 36..39 800000B0
-		0x015D47F8,0xF8248360,0x00000000,0x00000001, // 40..43 800000C0
-		0x00000000,0x00000000,0x00000000,0x00000000, // 44..47 800000D0
-		0x814B7F50,0x815D47F8,0x00000000,0x81800000, // 48..51 800000E0
-		0x01800000,0x817FC8C0,0x09A7EC80,0x1CF7C580  // 52..55 800000F0
-	};
-
-	u32 Counter=0;
-	u32 *pSrcAddr=GC_DefaultConfig;
-	u32 *pDstAddr=GC_INIT_BASE_PTR;
-
-	GC_DefaultConfig[43] = VidMode;
-
-	for(Counter=0; Counter<56; Counter++) {
-		pDstAddr[Counter] = pSrcAddr[Counter];
-	}
-
-	if( VidMode == 1 )	{
-		InitVideo((u32*)GC_VI_MODE_IRegs_PAL);
-		vidHeight = HEIGHT_PAL;
-	}
-	else {
-		InitVideo((u32*) GC_VI_MODE_IRegs_NTSC);
-		vidHeight = HEIGHT_NTSC;
-	}
-}
-
-static void load_apploader()
-{
-	const int bDBGOUT = 1;
-
-	void (*app_init)(void (*report)(const char *fmt, ...));
-	int  (*app_main)(void **dst, int *size, int *offset);
-	void *(*app_final)();
-	void (*app_entry)(void(**init)(void (*report)(const char *fmt, ...)), int (**main)(), void *(**final)());
-
-    u8 *buffer = (u8*)0xC0100000;
-
-	cls();
-	DVD_Read(buffer,0x460,0);
-	print("\nLoading...");
-
-	InitSystem((buffer[0x45b] == 2) ? 1 : 0);
-
-	DVD_Read(buffer, 0x20, 0x2440);
-	DVD_Read((void*)0x81200000, ((*(unsigned long*)(buffer+0x14)) + 31) &~31,0x2460);
-
-	app_entry = (void (*)(void(**)(void (*)(const char*,...)),int (**)(),void *(**)()))(*(unsigned long*)(buffer + 0x10));
-   	app_entry(&app_init,( int (**)()) &app_main,&app_final);
-	app_init((void (*)(const char*,...))report);
-	
-	for(;;) {
-		void *dst = 0;
-		int len = 0,offset = 0;
-		int res = app_main(&dst, &len, &offset);
-
-		if (!res) break;
-		DVD_Read(dst, len, offset);
-	}
-	void (*entrypoint)() = (void (*)()) app_final();
-    entrypoint();
+  return 0; /*** keep gcc happy ***/
 }
