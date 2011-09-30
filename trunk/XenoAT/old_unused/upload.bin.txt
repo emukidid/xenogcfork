@@ -1,0 +1,94 @@
+0040D000 F710FFF7    	????        	AND	$F7FF,PSW
+0040D004 F5D9C8FF    	????        	BCLR	($FFC8)1
+0040D008 F88020      	??          	MOV	$2080,D0
+0040D00B C080FD      	???         	MOV	D0,($FD80)
+0040D00E F47080C000  	?p???       	MOV	$00C080,D0
+0040D013 C080FD      	???         	MOV	D0,($FD80)
+0040D016 F47400D840  	?t??@       	MOV	$40D800,A0
+0040D01B F82121      	?!!         	MOV	$2121,D0
+0040D01E 00          	?           	MOV	D0,(A0)
+0040D01F 4002        	@?          	MOV	D0,($02,A0)
+0040D021 A0          	?           	SUB	D0,D0
+0040D022 F4E1502A08  	??P*?       	JSR	$0048FA77
+0040D027 F4C4F18100  	?????       	MOVB	($0081F1),D0
+0040D02C F700FEFF    	????        	AND	$FFFE,D0
+0040D030 C4F181      	???         	MOVB	D0,($81F1)
+0040D033 8051        	?Q          	MOV	$51,D0			;'Q'
+0040D035 FD5500      	?U?         	JSR	$0040D08D
+0040D038 FD7200      	?r?         	JSR	$0040D0AD
+0040D03B 81          	?           	MOV	D0,D1
+0040D03C 95          	?           	ADD	D1,D1
+0040D03D 95          	?           	ADD	D1,D1
+0040D03E 95          	?           	ADD	D1,D1
+0040D03F 95          	?           	ADD	D1,D1
+0040D040 95          	?           	ADD	D1,D1
+0040D041 95          	?           	ADD	D1,D1
+0040D042 95          	?           	ADD	D1,D1
+0040D043 95          	?           	ADD	D1,D1
+0040D044 8043        	?C          	MOV	$43,D0			;'C'
+0040D046 FD4400      	?D?         	JSR	$0040D08D
+0040D049 FD6100      	?a?         	JSR	$0040D0AD
+0040D04C 91          	?           	ADD	D0,D1
+0040D04D 804F        	?O          	MOV	$4F,D0			;'O'
+0040D04F FD3B00      	?;?         	JSR	$0040D08D
+0040D052 FD5800      	?X?         	JSR	$0040D0AD
+0040D055 8044        	?D          	MOV	$44,D0			;'D'
+0040D057 FD3300      	?3?         	JSR	$0040D08D
+0040D05A FD5000      	?P?         	JSR	$0040D0AD
+0040D05D 84          	?           	MOV	D1,D0
+0040D05E FD2C00      	?,?         	JSR	$0040D08D
+0040D061 F47400C640  	?t??@       	MOV	$40C600,A0
+0040D066 8A00        	??          	MOV	$00,D2			;'?'
+0040D068 FD4200      	?B?         	JSR	$0040D0AD
+0040D06B FD1F00      	???         	JSR	$0040D08D
+0040D06E 10          	?           	MOVB	D0,(A0)
+0040D06F 92          	?           	ADD	D0,D2
+0040D070 FD3A00      	?:?         	JSR	$0040D0AD
+0040D073 FD1700      	???         	JSR	$0040D08D
+0040D076 F51001      	???         	MOVB	D0,($01,A0)
+0040D079 92          	?           	ADD	D0,D2
+0040D07A D002        	??          	ADD	$02,A0
+0040D07C F71D0100    	????        	SUB	$0001,D1
+0040D080 E9E6        	??          	BNE	$0040D068
+0040D082 F5D9C8FF    	????        	BCLR	($FFC8)1
+0040D086 F47400C640  	?t??@       	MOV	$40C600,A0
+0040D08B F001        	??          	JSR	(A0)
+0040D08D F25A        	?Z          	SUB	A2,A2
+0040D08F F4C783FD00  	?????       	MOVB	($00FD83),D3
+0040D094 F50380      	???         	AND	$80,D3
+0040D097 E810        	??          	BEQ	$0040D0A9
+0040D099 D201        	??          	ADD	$01,A2
+0040D09B F47E80841E  	?~???       	CMP	$1E8480,A2
+0040D0A0 E9ED        	??          	BNE	$0040D08F
+0040D0A2 F3FECF83FD00	???????     	TBNZ	($00FD83)7,$0040D0A2
+0040D0A9 C482FD      	???         	MOVB	D0,($FD82)
+0040D0AC FE          	?           	RTS	
+---------------------------
+
+0040D0AD F25A        	?Z          	SUB	A2,A2
+0040D0AF F4C783FD00  	?????       	MOVB	($00FD83),D3
+0040D0B4 F50340      	??@         	AND	$40,D3
+0040D0B7 E810        	??          	BEQ	$0040D0C9
+0040D0B9 D201        	??          	ADD	$01,A2
+0040D0BB F47E80841E  	?~???       	CMP	$1E8480,A2
+0040D0C0 E9ED        	??          	BNE	$0040D0AF
+0040D0C2 F3FEC483FD00	???????     	TBZ	($00FD83)4,$0040D0C2
+0040D0C9 CC82FD      	???         	MOVBU	($FD82),D0
+0040D0CC FE          	?           	RTS	
+---------------------------
+
+0040D0CD D3FC        	??          	ADD	$FC,A3
+0040D0CF 0C          	?           	MOV	D0,(A3)
+0040D0D0 F4C000D840  	????@       	MOV	($40D800),D0
+0040D0D5 D401        	??          	ADD	$01,D0			;'?'
+0040D0D7 F44000D840  	?@??@       	MOV	D0,($40D800)
+0040D0DC F44703D840  	?G??@       	MOVB	D3,($40D803)
+0040D0E1 2C          	,           	MOV	(A3),D0
+0040D0E2 D304        	??          	ADD	$04,A3
+0040D0E4 FE          	?           	RTS	
+---------------------------
+
+0040D0E5 F5D1C8FF    	????        	BSET	($FFC8)1
+0040D0E9 F474100808  	?t???       	MOV	$080810,A0
+0040D0EE F000        	??          	JMP	(A0)
+
