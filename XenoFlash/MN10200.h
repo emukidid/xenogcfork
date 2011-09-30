@@ -256,25 +256,3 @@
 	.byte 0xF5, 0xDC, 0xC8 ,0xFF	
 .endm
 
-
-
-
-
-
-/*	TBZ(ADDR_24)BIT, DEST:	
-	f3 fe c0 + bit addr_l addr_m addr_h reloffset
-
-
-.macro m_tbz addr bit dest			
-	.byte 0xF3, 0xFE
-	.byte 0xC0 + \bit
-	.word \addr
-	.byte 0x00
-	.byte 0xfd
-	.byte \dest-.
-.endm
-
-m_tbz 0x1234 5 drivecode_init
-m_tbz 0x1234 5 drivecode_init
-
-*/
