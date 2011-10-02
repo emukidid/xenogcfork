@@ -2,7 +2,7 @@
 
 
 /*##############################################################################*/
-/*	Variables address defines													*/
+/*	Variables address defines						*/
 /*##############################################################################*/
 .set DbgWritePtr,		0x8004
 .set DbgReadPtr,		0x8006
@@ -11,7 +11,7 @@
 .set DbgDumpSize,		0x40d800
 
 /*##############################################################################*/
-/*	Register address defines													*/
+/*	Register address defines						*/
 /*##############################################################################*/
 .set	P0OUT,		0xffc0		## PortXOutputRegister
 .set	P1OUT,		0xffc1
@@ -21,7 +21,7 @@
 .set	P5OUT,		0xffc5
 .set	P6OUT,		0xffc6
 .set	P7OUT,		0xffc7
-.set	P8OUT,		0xffC8		
+.set	P8OUT,		0xffC8
 .set	P9OUT,		0xffC9
 .set	P0IN,		0xffd0		## PortXInputRegister
 .set	P1IN,		0xffd1
@@ -31,8 +31,8 @@
 .set	P5IN,		0xffd5
 .set	P6IN,		0xffd6
 .set	P7IN,		0xffd7
-.set	P8IN,		0xffd8		
-.set	P9IN,		0xffd9		
+.set	P8IN,		0xffd8
+.set	P9IN,		0xffd9
 .set	P1DIR,		0xffe1		## PortXInput/Output Dir Register
 .set	P2DIR,		0xffe2
 .set	P3DIR,		0xffe3
@@ -40,7 +40,7 @@
 .set	P5DIR,		0xffe5
 .set	P6DIR,		0xffe6
 .set	P7DIR,		0xffe7
-.set	P8DIR,		0xffe8		
+.set	P8DIR,		0xffe8
 .set	P9DIR,		0xffe9
 
 .set	P8PLU,		0xffb8		## Port8Pull-upControlRegister
@@ -49,39 +49,39 @@
 .set	P8HMD,		0xfffe		## Port8ModeRegister
 
 	
-.set	REG_IAGR,		0xfc0e
-.set	REG_UNICR,		0xfc44
-.set 	UNID,			(1<<0)
+.set	REG_IAGR,	0xfc0e
+.set	REG_UNICR,	0xfc44
+.set 	UNID,		(1<<0)
 
-.set	REG_ADB0,		0xfcd2
-.set	REG_ADB1,		0xfcd6
+.set	REG_ADB0,	0xfcd2
+.set	REG_ADB1,	0xfcd6
 .set	REG_ADBCTRL,	0xfcda
 
-.set 	ADB0ACK,		(0x01)
-.set 	ADB1ACK,		(0x02)
-.set 	ADB0_ON,		(0x04)
-.set 	ADB1_ON,		(0x08)
-.set 	ADB01_ON,		(ADB0_ON | ADB1_ON) 
+.set 	ADB0ACK,	(0x01)
+.set 	ADB1ACK,	(0x02)
+.set 	ADB0_ON,	(0x04)
+.set 	ADB1_ON,	(0x08)
+.set 	ADB01_ON,	(ADB0_ON | ADB1_ON) 
 
 
-.set	NMICR,			0xfc40
+.set	NMICR,		0xfc40
 
-.set	REG_BSWAPL,		0xFFCC
-.set	REG_BSWAPH,		0xFFCE
+.set	REG_BSWAPL,	0xFFCC
+.set	REG_BSWAPH,	0xFFCE
 
 .set	REG_SWAP16READ,	0xFFCC
 .set	REG_SWAP16WRITE,0xFFCE
 
-.set	SC0CTR,			0xfd80
-.set	SC0TRB,			0xfd82
+.set	SC0CTR,		0xfd80
+.set	SC0TRB,		0xfd82
 
 
-.set	SC3CTR,			0xfd98
-.set	SC3TRB,			0xfd9a
+.set	SC3CTR,		0xfd98
+.set	SC3TRB,		0xfd9a
 
 
 /*##############################################################################*/
-/*	Macros																		*/
+/*	Macros									*/
 /*##############################################################################*/
 
 .macro CLI
@@ -122,7 +122,7 @@
 
 
 /* helper macro for correct absolute 24bit jsrs */
-.macro jsrabsOrg addr			
+.macro jsrabsOrg addr
 	jsr \addr-.+\addr
 .endm
 
@@ -202,9 +202,8 @@
 .endm
 
 
-
 /*##############################################################################*/
-/*	P80, P81 serial transfer macros												*/
+/*	P80, P81 serial transfer macros						*/
 /*##############################################################################*/
 
 

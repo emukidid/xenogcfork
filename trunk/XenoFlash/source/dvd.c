@@ -1,3 +1,5 @@
+#if IS_PORTED
+
 void DVD_CallFunc(u32 fnAddress) {
 	
 }
@@ -148,3 +150,4 @@ int DVD_WriteDriveMemDword(u32 dwAddress, u32 dwData)
 	return 0;
 }
 
+#endif

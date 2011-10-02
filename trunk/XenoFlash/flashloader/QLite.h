@@ -42,12 +42,13 @@ SC0STR:
 # firmware version addresses
 #------------------------------------------------------------------------------------------
 
+/* macro already defined? --infact
 	.macro IMM24Bit Addr
 		.byte (\Addr & 0xFF)
 		.byte (\Addr >> 8 & 0xFF)
 		.byte (\Addr >> 16 & 0xFF)
 	.endm
-
+*/
 	.macro FwAddrImp16 Name P1, P2, P3
 		X\Name: 
 		IMM24Bit \P1
