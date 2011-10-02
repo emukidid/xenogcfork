@@ -1,108 +1,131 @@
-#
-# Main makefile
-#
+#---------------------------------------------------------------------------------
+# Clear the implicit built in rules
+#---------------------------------------------------------------------------------
+.SUFFIXES:
+#---------------------------------------------------------------------------------
+ifeq ($(strip $(DEVKITPPC)),)
+$(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
+endif
 
-# I hope this doesn't break your build, but I've got different names for the tools. The contents 
-# of Makefile.local on my machine are:
-#  BINPATH=$(HOME)/gc/bin
-#  CROSS=powerpc-eabi-elf
-#  CC=$(BINPATH)/$(CROSS)-gcc
-#  OBJCOPY=$(BINPATH)/$(CROSS)-objcopy
-#  LD=$(BINPATH)/$(CROSS)-ld
-#  AS=$(BINPATH)/$(CROSS)-as
-#  
-#  CFLAGS_LOCAL=-DSAMSON=1
-# it is excluded from CVS, to not conflict with your settings.
+include $(DEVKITPPC)/gamecube_rules
 
-APPNAME	= bin/xenoflash
+#---------------------------------------------------------------------------------
+# TARGET is the name of the output
+# BUILD is the directory where object files & intermediate files will be placed
+# SOURCES is a list of directories containing source code
+# INCLUDES is a list of directories containing extra header files
+#---------------------------------------------------------------------------------
+TARGET		:=	$(notdir $(CURDIR))
+BUILD		:=	build
+SOURCES		:=	source
+DATA		:=	data, $(CURDIR)/../XenoAT/source/XenoAT.bin
+INCLUDES	:=
 
-############################################################################################################
+#---------------------------------------------------------------------------------
+# options for code generation
+#---------------------------------------------------------------------------------
 
-INIT	=	call gctools.bat
+CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE)
+CXXFLAGS	=	$(CFLAGS)
 
-CROSS	= 	@powerpc-gekko-
-CC		=	$(CROSS)gcc
-CXX		=	$(CROSS)g++
-AR		=	$(CROSS)ar
-OBJCOPY	=	$(CROSS)objcopy
-AS		=	$(CROSS)as
-LD		=	$(CXX)
+LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 
-DOLTOOL	=	@doltool
+#---------------------------------------------------------------------------------
+# any extra libraries we wish to link with the project
+#---------------------------------------------------------------------------------
+LIBS	:=	-logc
 
+#---------------------------------------------------------------------------------
+# list of directories containing libraries, this must be the top level containing
+# include and lib
+#---------------------------------------------------------------------------------
+LIBDIRS	:=	$(DEVKITPPC)/../libogc/
 
-# Configuration
-CFLAGS =		$(CFLAGS_LOCAL) -fno-exceptions -Wa,-mregnames \
-				-I$(GCLIBDIR) -Iinclude -o2
+#---------------------------------------------------------------------------------
+# no real need to edit anything past this point unless you need to add additional
+# rules for different file extensions
+#---------------------------------------------------------------------------------
+ifneq ($(BUILD),$(notdir $(CURDIR)))
+#---------------------------------------------------------------------------------
 
-AFLAGS	=	-Iinclude
-LDFLAGS	=	--gc-sections --omagic -T first.lds
-			#-Ttext=0x81400000
+export OUTPUT	:=	$(CURDIR)/$(TARGET)
 
+export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
+					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
 
-# Files
-MAIN_OBJS	= main.o title.raw.o
-BOOT_OBJS	= $(GCLIBDIR)/crt0.o 
-GCLIB_OBJS	= $(GCLIBDIR)/cache.o $(GCLIBDIR)/GC_Debug.o $(GCLIBDIR)/GC_Video.o $(GCLIBDIR)/GC_String.o $(GCLIBDIR)/GC_Random.o $(GCLIBDIR)/GC_PAD.o $(GCLIBDIR)/GC_Dvd.o $(GCLIBDIR)/GC_Memory.o $(GCLIBDIR)/GC_Time.o $(GCLIBDIR)/GC_vsprintf.o $(GCLIBDIR)/GC_EXI.o
+export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
-LIBRARIES =
-# gdbstub/libgdbstub.a
-# ./lwip/core/dhcp.o 
+#---------------------------------------------------------------------------------
+# automatically build a list of object files for our project
+#---------------------------------------------------------------------------------
+CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
+sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
+SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
+BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 
-OBJS =   $(BOOT_OBJS) $(GCLIB_OBJS) $(LIBRARIES) $(MAIN_OBJS) 
+#---------------------------------------------------------------------------------
+# use CXX for linking C++ projects, CC for standard C
+#---------------------------------------------------------------------------------
+ifeq ($(strip $(CPPFILES)),)
+	export LD	:=	$(CC)
+else
+	export LD	:=	$(CXX)
+endif
 
-# Build rules
-all: $(APPNAME).dol 
+export OFILES	:=	$(addsuffix .o,$(BINFILES)) \
+					$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
+					$(sFILES:.s=.o) $(SFILES:.S=.o)
 
+#---------------------------------------------------------------------------------
+# build a list of include paths
+#---------------------------------------------------------------------------------
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+					-I$(CURDIR)/$(BUILD) \
+					-I$(LIBOGC_INC)
+
+#---------------------------------------------------------------------------------
+# build a list of library paths
+#---------------------------------------------------------------------------------
+export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
+					-L$(LIBOGC_LIB)
+
+export OUTPUT	:=	$(CURDIR)/$(TARGET)
+.PHONY: $(BUILD) clean
+
+#---------------------------------------------------------------------------------
+$(BUILD):
+	@[ -d $@ ] || mkdir -p $@
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+
+#---------------------------------------------------------------------------------
 clean:
-	rm -rf $(OBJS)
-	
-cleanx:
-	find -name '*.o' | xargs -r rm
-	find -name '*.a' | xargs -r rm
-	find -name '*~' | xargs -r rm
-	find -name '*.bin' | xargs -r rm
-	find -name '*.dol' | xargs -r rm
-	find -name '*.elf' | xargs -r rm
-	find -name '*.map' | xargs -r rm
-	find -name '*.tmp' | xargs -r rm
+	@echo clean ...
+	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
 
-.c.o:
-	$(CC) $(CFLAGS)  -c -o $@ $*.c
 
-.cpp.o:
-	$(CXX) $(CFLAGS) -c -o $@ $*.cpp
+#---------------------------------------------------------------------------------
+else
 
-.s.o:
-	$(CC) $(AFLAGS) -c -o $@ $*.s
+DEPENDS	:=	$(OFILES:.o=.d)
 
-.S.o:
-	$(CC) $(AFLAGS) -c -o $@ $*.S
+#---------------------------------------------------------------------------------
+# main targets
+#---------------------------------------------------------------------------------
+$(OUTPUT).dol: $(OUTPUT).elf
+$(OUTPUT).elf: $(OFILES)
 
-###################################################
-# 
-###################################################
-main.o: flashloader.bin
-main.o: ../XenoAT/bin/XenoAT.bin
+#---------------------------------------------------------------------------------
+# This rule links in binary data with the .jpg extension
+#---------------------------------------------------------------------------------
+%.jpg.o	:	%.jpg
+#---------------------------------------------------------------------------------
+	@echo $(notdir $<)
+	$(bin2o)
 
-$(APPNAME).elf: $(APPNAME)_tmp.elf
-	$(OBJCOPY) -R .comment $< $@
+-include $(DEPENDS)
 
-$(APPNAME).bin: $(APPNAME).elf
-	$(OBJCOPY) -O binary $< $@
-			
-$(APPNAME).dol: $(APPNAME).elf
-	$(DOLTOOL) -d $(APPNAME).elf
-
-$(APPNAME)_tmp.elf: $(OBJS)
-	$(CXX) $(LDFLAGS) -Wl,-n -o $@ $(OBJS) -Wl,-Map -Wl,$(APPNAME).map
-
-flashloader.o: flashloader.S
-	@as_mn10200 -L flashloader.S -o flashloader.o
-
-flashloader.elf: flashloader.o
-	@ld-mn10200 -Ttext 0x40D000 --section-start absolute=0x00 -O mn10200-elf flashloader.o -o flashloader.elf
-
-flashloader.bin: flashloader.elf
-	@objcopy-all -O binary flashloader.elf flashloader.bin
-
+#---------------------------------------------------------------------------------
+endif
+#---------------------------------------------------------------------------------
