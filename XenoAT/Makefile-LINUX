@@ -1,0 +1,78 @@
+###########################################################################################
+###########################################################################################
+# Makefile - XenoAT LINUX
+###########################################################################################
+###########################################################################################
+# USER DEFINE VARIABLES
+#
+# MCU    =  Target AVR < atmega8 >
+# TARGET =  Target File to Compile
+# AVRDIR =  Path to avr-gcc 3.4
+# MNDIR  =  Path to MN10200 Binutils <NOTE: NOT COMPATIBLE with MN10200 included in DEVKITPRO>
+# MNDIR1 =  Path to MN10200 ELF GCC  < NOTE: NOT COMPATIBLE with MN10200 included in DEVKITPRO>
+#
+#
+MCU    = atmega8
+AVRDIR = /opt/XenoTools/bin
+MNDIR  = /opt/XenoTools/mn10200_binutils/bin
+MNDIR1 = /opt/XenoTools/mn10200/bin
+###########################################################################################
+###########################################################################################
+###########################################################################################
+###########################################################################################
+TARGET = XenoAT
+CC      = $(AVRDIR)/avr-gcc
+OBJCOPY = $(AVRDIR)/avr-objcopy
+OBJDUMP = $(AVRDIR)/avr-objdump
+SIZE    = $(AVRDIR)/avr-size
+MNAS    = $(MNDIR)/mn10200-as
+MNLD    = $(MNDIR)/mn10200-ld
+MNELF   = $(MNDIR1)/mn10200-elf-gcc
+SOURCES = $(TARGET)/source
+SRC     = $(SOURCES)/$(TARGET)
+ASRC    = $(SOURCES)/qcode
+CFLAGS  = -mmcu=$(MCU) -I. -g -Os -funsigned-char -funsigned-bitfields \
+	-fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wa,-ahlms
+ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp -Wa,-ahlms
+LDFLAGS = -Wl,-Map=$(SRC).map,--cref -lm
+ELFSIZE = $(SIZE) -A $(SRC).elf
+MOVE	= mv $(SOURCES)/$(TARGET).hex $(TARGET)
+#
+LINE    = echo --------------------------------------------
+BLD     = @echo;$(LINE);echo BUILDING: XENO HEX;$(LINE)
+BLDELF  = @echo;$(LINE);echo CREATING: ELF;$(LINE)
+BLDHEX  = @echo;$(LINE);echo CREATING: HEX;$(LINE)
+BLDSIZE = @echo;$(LINE);echo AVR Memory Usage;$(LINE);$(ELFSIZE)
+MD5	= @echo;$(LINE);echo MD5SUM:; $(LINE);md5sum $(TARGET)/$(TARGET).hex
+END	= @echo;$(LINE);echo BUILDING: XENO HEX...DONE!!;$(LINE)
+###########################################################################################
+###########################################################################################
+
+all: clean build
+
+build:
+	$(BLD)
+	$(CC) -c $(CFLAGS)=$(SRC).lst $(SRC).c -o $(SRC).o
+	$(MNAS) -L $(SOURCES)/upload.S -o $(SOURCES)/upload.o
+	$(MNLD) -Ttext 0x40d000 -O $(MNELF) $(SOURCES)/upload.o -o $(SOURCES)/upload.elf
+	$(CC) -c $(ASFLAGS)=$(ASRC).lst,-gstabs  $(ASRC).S -o $(ASRC).o
+	$(BLDELF)
+	$(CC) $(CFLAGS)=$(SRC).o $(SRC).o  $(ASRC).o  --output $(SRC).elf $(LDFLAGS)
+	$(BLDHEX)
+	$(OBJCOPY) -O ihex -R .eeprom $(SRC).elf $(SRC).hex
+	$(MOVE)
+	$(BLDSIZE)
+	$(MD5)
+	$(END)
+
+
+###########################################################################################
+###########################################################################################
+# Target: clean project.
+clean:
+	rm -f $(TARGET)/$(TARGET).hex
+	rm -f $(SOURCES)/$(TARGET).bin
+	rm -f $(SOURCES)/*.map
+	rm -f $(SOURCES)/*.elf
+	rm -f $(SOURCES)/*.lst
+	rm -f $(SOURCES)/*.o

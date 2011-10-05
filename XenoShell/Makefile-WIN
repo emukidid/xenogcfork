@@ -1,0 +1,41 @@
+###########################################################################################
+###########################################################################################
+# Makefile - XenoShell WINDOWS
+############################################################################################
+###########################################################################################
+# USER DEFINE VARIABLES
+# DEVKITPPC = Path to \devkitPro\devkitPPC
+#
+#
+DEVKITPPC = 'C:\devkitPro\devkitPPC'
+###########################################################################################
+###########################################################################################
+TARGET  = XenoShell
+SOURCES = $(TARGET)/source
+DIR     = $(DEVKITPPC)/bin
+CC      = $(DIR)/powerpc-eabi-gcc
+OBJCOPY = $(DIR)/powerpc-eabi-objcopy
+FLAGS   = -nostdlib -Wall -Os -pipe -Wl,-s,-x,--gc-sections -Wa,-mregnames -fno-exceptions\
+		  -mhard-float -Wl,-T,$(SOURCES)/first.lds -Wl,-Map=$(SOURCES)/$(TARGET).map
+REMOVE  = rm -f
+LINE    = echo --------------------------------------------
+BLD     = @echo;$(LINE);echo BUILDING: XENO SHELL;$(LINE)
+END		= @echo;$(LINE);echo BUILDING: XENO SHELL...DONE!!;$(LINE)
+MOVE	= mv $(SOURCES)/$(TARGET).bin $(TARGET)
+
+all: clean build move
+
+build:
+	$(BLD)
+	$(CC) $(FLAGS) $(SOURCES)/boot.s $(SOURCES)/main.c -lgcc -o $(SOURCES)/$(TARGET).elf
+	$(OBJCOPY) -O  binary $(SOURCES)/$(TARGET).elf $(SOURCES)/$(TARGET).bin
+
+move:
+	$(MOVE)
+	$(END)
+
+clean:
+	$(REMOVE) $(TARGET)/$(TARGET).bin
+	$(REMOVE) $(SOURCES)/$(TARGET).elf
+	$(REMOVE) $(SOURCES)/$(TARGET).map
+	

@@ -1,6 +1,6 @@
 
 /* global settings header used by various sub-projetcs	*/
-.include "../XenoGlobal.h"
+.include "XenoGlobal.h"
 
 .text
 
@@ -16,14 +16,14 @@
 #--------------------------------------
  qcode:
 #--------------------------------------
-.incbin "source/qcode.bin"
+.incbin "XenoAT/source/qcode.bin"
 qcode_end:
 
 .align 2
 #--------------------------------------
  upload:
 #--------------------------------------
-.incbin "source/upload.bin"
+.incbin "XenoAT/source/upload.bin"
 upload_end:
 
 .align 2
@@ -31,11 +31,11 @@ upload_end:
  credits:
 #--------------------------------------
 .if CREDITS == 1
-#	.incbin "source/credits.bin"
-#	.incbin "source/sdload.bin"
-	.incbin "source/XenoShell.bin"
+#	.incbin "XenoAT/source/credits.bin"
+#	.incbin "XenoAT/source/sdload.bin"
+	.incbin "XenoAT/source/XenoShell.bin"
 .else
-	.incbin "source/NoCredits.bin"
+	.incbin "XenoAT/source/NoCredits.bin"
 .endif
 
 credits_end:

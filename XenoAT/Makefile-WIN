@@ -1,0 +1,102 @@
+###########################################################################################
+###########################################################################################
+# Makefile - XenoAT WINDOWS
+###########################################################################################
+###########################################################################################
+# USER DEFINE VARIABLES
+# NOTE: MAY NOT BE REQUIRED
+#
+# MCU    =  Target AVR < atmega8 >
+#
+#
+MCU    = atmega8
+###########################################################################################
+###########################################################################################
+TARGET  = XenoAT
+CC      = avr-gcc
+OBJCOPY = avr-objcopy
+OBJDUMP = avr-objdump
+SIZE    = avr-size
+REMOVE  = rm -f
+DIR     = .
+SOURCES = $(TARGET)/source
+SRC     = $(SOURCES)/$(TARGET).c 
+ASRC    = $(SOURCES)/qcode.S
+CFLAGS  = -mmcu=$(MCU) -I. -g -Os \
+	-funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums \
+	-Wall -Wstrict-prototypes \
+	-Wa,-ahlms=$(<:.c=.lst)
+ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp -Wa,-ahlms=$(<:.S=.lst),-gstabs 
+LDFLAGS = -Wl,-Map=$(SOURCES)/$(TARGET).map,--cref
+LDFLAGS += -lm
+OBJ     = $(SRC:.c=.o) $(ASRC:.S=.o) 
+ELFSIZE = $(SIZE) -A $(SOURCES)/$(TARGET).elf
+MOVE    = @mv $(SOURCES)/$(TARGET).hex $(TARGET)
+#
+LINE    = echo --------------------------------------------
+BLD     = @echo;$(LINE);echo BUILDING: XENO HEX;$(LINE)
+BLDELF  = @echo;$(LINE);echo CREATING: ELF;$(LINE)
+BLDHEX  = @echo;$(LINE);echo CREATING: HEX;$(LINE)
+BLDSIZE = @echo;$(LINE);echo AVR Memory Usage;$(LINE);$(ELFSIZE)
+MD5	    = @echo;$(LINE);echo MD5SUM:; $(LINE);md5sum $(TARGET)/$(TARGET).hex
+END	    = @echo;$(LINE);echo BUILDING: XENO HEX...DONE!!;$(LINE)
+DUMP	= @echo;$(LINE);echo DUMPING EXTENDED DATA;$(LINE)
+###########################################################################################
+
+# Default target.
+all:  clean $(SOURCES)/$(TARGET).elf $(SOURCES)/$(TARGET).hex end
+
+end:
+	$(MOVE)
+	$(BLDSIZE)
+	$(MD5)
+	$(END)
+
+extra: all
+	$(OBJCOPY) -j .text -j .data -O binary $(SOURCES)/$(TARGET).elf $(SOURCES)/$(TARGET).bin
+	$(OBJCOPY) -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+	--change-section-lma .eeprom=0 -O ihex $(SOURCES)/$(TARGET).elf $(SOURCES)/$(TARGET).eep
+	$(OBJDUMP) -h -S $(SOURCES)/$(TARGET).elf > $(SOURCES)/$(TARGET).lss
+	@echo; echo; echo DONE !!
+
+###########################################################################################
+
+# Assemble: create object files from assembler source files.
+%.o : %.S
+	$(BLD)
+	$(CC) -c $(ASFLAGS) $< -o $@
+
+
+# Compile: create object files from C source files.
+%.o : %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+
+# Link: create ELF output file from object files.
+%.elf: $(OBJ)
+	$(BLDELF)
+	$(CC) $(CFLAGS) $(OBJ) --output $@ $(LDFLAGS)
+
+
+# Create final output files (.hex, .eep) from ELF output file.
+%.hex: %.elf
+	$(BLDHEX)
+	$(OBJCOPY) -O ihex -R .eeprom $< $(DIR)/$@
+
+
+$(SOURCES)/upload.bin: $(SOURCES)/upload.S
+	@as_mn10200 -L $(SOURCES)/upload.S -o $(SOURCES)/upload.o
+	@ld-mn10200 -Ttext 0x40d000 -O mn10200-elf $(SOURCES)/upload.o -o $(SOURCES)/upload.elf
+	@objcopy-all -O $(SOURCES)/binary $(SOURCES)/upload.elf $(SOURCES)/upload.bin
+$(SOURCES)/qcode.o: $(SOURCES)/upload.bin
+
+###########################################################################################
+# Target: clean project.
+clean: 
+	$(REMOVE) $(TARGET).hex
+	$(REMOVE) $(SOURCES)/$(TARGET).bin
+	$(REMOVE) $(SOURCES)/$(TARGET).eep
+	$(REMOVE) $(SOURCES)/*.map
+	$(REMOVE) $(SOURCES)/*.elf
+	$(REMOVE) $(SOURCES)/*.lst
+	$(REMOVE) $(SOURCES)/*.o

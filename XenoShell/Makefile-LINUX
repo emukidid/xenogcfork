@@ -1,28 +1,33 @@
 ###########################################################################################
 ###########################################################################################
-# Makefile 
+# Makefile - XenoShell LINUX
 ###########################################################################################
 ###########################################################################################
 
-TARGET = XenoShell
-SOURCES = source
-DIR = $(DEVKITPPC)/bin/
-CC = $(DIR)/powerpc-eabi-gcc
+TARGET  = XenoShell
+SOURCES = $(TARGET)/source
+DIR     = $(DEVKITPPC)/bin
+CC      = $(DIR)/powerpc-eabi-gcc
 OBJCOPY = $(DIR)/powerpc-eabi-objcopy
-FLAGS = -nostdlib -Wall -Os -pipe -Wl,-s,-x,--gc-sections -Wa,-mregnames -fno-exceptions -mhard-float -Wl,-T,$(SOURCES)/first.lds -Wl,-Map=$(SOURCES)/$(TARGET).map
+FLAGS   = -nostdlib -Wall -Os -pipe -Wl,-s,-x,--gc-sections -Wa,-mregnames -fno-exceptions\
+	-mhard-float -Wl,-T,$(SOURCES)/first.lds -Wl,-Map=$(SOURCES)/$(TARGET).map
+LINE    = echo --------------------------------------------
+BLD     = @echo;$(LINE);echo BUILDING: XENO SHELL;$(LINE)
+END	= @echo;$(LINE);echo BUILDING: XENO SHELL...DONE!!;$(LINE)
+MOVE	= mv $(SOURCES)/$(TARGET).bin $(TARGET)
 
-
-
-all: build move
+all: clean build move
 
 build:
+	$(BLD)
 	$(CC) $(FLAGS) $(SOURCES)/boot.s $(SOURCES)/main.c -lgcc -o $(SOURCES)/$(TARGET).elf
 	$(OBJCOPY) -O  binary $(SOURCES)/$(TARGET).elf $(SOURCES)/$(TARGET).bin
 
 move:
-	mv $(SOURCES)/$(TARGET).bin .
+	$(MOVE)
+	$(END)
 
 clean:
-	rm -f $(TARGET).bin
+	rm -f $(TARGET)/$(TARGET).bin
 	rm -f $(SOURCES)/$(TARGET).elf
 	rm -f $(SOURCES)/$(TARGET).map
