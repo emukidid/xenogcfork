@@ -1,0 +1,42 @@
+###########################################################################################
+###########################################################################################
+# Makefile Help 
+###########################################################################################
+###########################################################################################
+
+LINE     = echo --------------------------------------------
+INTRO    = @echo;$(LINE);echo XenoGC Makefile Help;$(LINE);echo
+USE      = @echo Compile Usage: make [ platform ][ options ]
+PLATFORM = @echo PLATFORM:;$(LIN);$(WIN)
+OPTIONS  = @echo OPTIONS:;$(XALL);$(XSHELL);$(XHEX)
+LIN      = echo '     linux           Linux operating system' 
+WIN      = echo '     windows         Windows operating system'
+XALL     = echo '     -all            Make entire source'
+XSHELL   = echo '     -shell          Make XenoShell only'
+XHEX     = echo '     -hex            Make XenoAT Hex only'
+
+
+AUSE     = @echo;echo;echo;echo AVR Usage: make [ options ]
+AOPTIONS = @echo OPTIONS:;$(FLASH);$(READ);$(WRITE)
+FLASH    = echo '     flash           Write Hex to Flash'
+READ     = echo '     readfuse        Read Fuse Settings'
+WRITE    = echo '     writefuse       Write Fuse Settings'
+
+EX       = @echo;echo;echo;$(ELIN);$(EWIN);$(EAVR);echo;echo;echo;
+ELIN     = echo Example: make linux-all
+EWIN     = echo Example: make windows-hex
+EAVR     = echo Example: make flash
+
+all: main
+
+main:
+	$(INTRO)
+	$(USE)
+	$(PLATFORM)
+	$(OPTIONS)
+	$(AUSE)
+	$(AOPTIONS)
+	$(EX)
+
+
+
