@@ -20,6 +20,10 @@ linux-shell:
 linux-hex:
 	make -f XenoAT/Makefile-LINUX
 
+linux-extra:
+	make -f XenoShell/Makefile-LINUX
+	make extra -f XenoAT/Makefile-LINUX
+
 ###########################################################################################
 ###########################################################################################
 # WINDOWS
@@ -28,6 +32,10 @@ windows-shell:
 
 windows-hex:
 	$(MAKE) -f XenoAT/Makefile-WIN
+
+windows-extra:
+	$(MAKE) -f XenoShell/Makefile-WIN
+	$(MAKE) extra -f XenoAT/Makefile-WIN
 
 ###########################################################################################
 ###########################################################################################

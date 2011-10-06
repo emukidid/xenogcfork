@@ -41,6 +41,7 @@ BLDSIZE = @echo;$(LINE);echo AVR Memory Usage;$(LINE);$(ELFSIZE)
 MD5	    = @echo;$(LINE);echo MD5SUM:; $(LINE);md5sum $(TARGET)/$(TARGET).hex
 END	    = @echo;$(LINE);echo BUILDING: XENO HEX...DONE!!;$(LINE)
 DUMP	= @echo;$(LINE);echo DUMPING EXTENDED DATA;$(LINE)
+DUMPEND	= @echo;$(LINE);echo DUMPING EXTENDED DATA...DONE!!;$(LINE)
 ###########################################################################################
 
 # Default target.
@@ -53,11 +54,12 @@ end:
 	$(END)
 
 extra: all
+	$(DUMP)
 	$(OBJCOPY) -j .text -j .data -O binary $(SOURCES)/$(TARGET).elf $(SOURCES)/$(TARGET).bin
 	$(OBJCOPY) -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 	--change-section-lma .eeprom=0 -O ihex $(SOURCES)/$(TARGET).elf $(SOURCES)/$(TARGET).eep
 	$(OBJDUMP) -h -S $(SOURCES)/$(TARGET).elf > $(SOURCES)/$(TARGET).lss
-	@echo; echo; echo DONE !!
+	$(DUMPEND)
 
 ###########################################################################################
 
@@ -93,9 +95,10 @@ $(SOURCES)/qcode.o: $(SOURCES)/upload.bin
 ###########################################################################################
 # Target: clean project.
 clean: 
-	$(REMOVE) $(TARGET).hex
+	$(REMOVE) $(TARGET)/$(TARGET).hex
 	$(REMOVE) $(SOURCES)/$(TARGET).bin
-	$(REMOVE) $(SOURCES)/$(TARGET).eep
+	$(REMOVE) $(SOURCES)/*.eep
+	$(REMOVE) $(SOURCES)/*.lss
 	$(REMOVE) $(SOURCES)/*.map
 	$(REMOVE) $(SOURCES)/*.elf
 	$(REMOVE) $(SOURCES)/*.lst
