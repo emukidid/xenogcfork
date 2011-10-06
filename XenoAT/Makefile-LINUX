@@ -45,6 +45,8 @@ BLDHEX  = @echo;$(LINE);echo CREATING: HEX;$(LINE)
 BLDSIZE = @echo;$(LINE);echo AVR Memory Usage;$(LINE);$(ELFSIZE)
 MD5	= @echo;$(LINE);echo MD5SUM:; $(LINE);md5sum $(TARGET)/$(TARGET).hex
 END	= @echo;$(LINE);echo BUILDING: XENO HEX...DONE!!;$(LINE)
+DUMP	= @echo;$(LINE);echo DUMPING EXTENDED DATA;$(LINE)
+DUMPEND	= @echo;$(LINE);echo DUMPING EXTENDED DATA...DONE!!;$(LINE)
 ###########################################################################################
 ###########################################################################################
 
@@ -65,6 +67,13 @@ build:
 	$(MD5)
 	$(END)
 
+extra: all
+	$(DUMP)
+	$(OBJCOPY) -j .text -j .data -O binary $(SOURCES)/$(TARGET).elf $(SOURCES)/$(TARGET).bin
+	$(OBJCOPY) -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+	--change-section-lma .eeprom=0 -O ihex $(SOURCES)/$(TARGET).elf $(SOURCES)/$(TARGET).eep
+	$(OBJDUMP) -h -S $(SOURCES)/$(TARGET).elf > $(SOURCES)/$(TARGET).lss
+	$(DUMPEND)
 
 ###########################################################################################
 ###########################################################################################
@@ -72,6 +81,8 @@ build:
 clean:
 	rm -f $(TARGET)/$(TARGET).hex
 	rm -f $(SOURCES)/$(TARGET).bin
+	rm -f $(SOURCES)/*.eep
+	rm -f $(SOURCES)/*.lss
 	rm -f $(SOURCES)/*.map
 	rm -f $(SOURCES)/*.elf
 	rm -f $(SOURCES)/*.lst
