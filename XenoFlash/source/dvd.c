@@ -1,10 +1,33 @@
-#if IS_PORTED
+#include "dvd.h"
 
-void DVD_CallFunc(u32 fnAddress) {
-	
+volatile long *dvd = (volatile long *) 0xCC006000;
+
+void DVD_CallFunc(u32 fnAddress)
+{
+	dvd[0] = 0x14; //DEINT clr, TCINT clr
+	dvd[1] = 0;
+	dvd[2] = 0xFE120000;	
+	dvd[3] = fnAddress;
+	dvd[4] = 0x66756e63;	
+	dvd[8] = 0;
+	dvd[7] = 1;
+
 }
 
-static int DVD_CustomDbgCommand(u32 dwCommand, u32 dwOffset, u32 dwLength, u32* pBuffer)
+int DVD_WaitImmediate()
+{
+	u32 nCount = 0;
+
+	while ((dvd[7] & 1)) {
+		if(++nCount > 0xFFFFFF) {
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
+int DVD_CustomDbgCommand(u32 dwCommand, u32 dwOffset, u32 dwLength, u32* pBuffer)
 {
 	dvd[0] = 0x2e;
 	dvd[1] = 0;
@@ -43,19 +66,10 @@ u32 DVD_ReadDriveMemDword(u32 dwAddress)
 
 u32 DVD_RequestError() {
 
-	DICMDBUF0 = 0xe0000000;
+	dvd[2] = 0xe0000000;
+	dvd[7] = 1;
 
-	DICR &= ~(1 << RW);
-	DICR &= ~(1 << DMA);
-	DICR |= (1 << TSTART);
-
-	return DIIMMBUF;
-}
-
-int DVD_SetDebugMode()
-{
-	DVD_SetDebugMode1();
-	DVD_SetDebugMode2();
+	return dvd[8];
 }
 
 int DVD_SetDebugMode1()
@@ -96,31 +110,11 @@ int DVD_SetDebugMode2()
 	return 0;
 }
 
-static int DVD_WaitImmediate()
+int DVD_SetDebugMode()
 {
-	u32 nCount = 0;
-
-	while ((dvd[7] & 1)) {
-		if(++nCount > 0xFFFFFF) {
-			return 0;
-		}
-	}
-
-	return 1;
-}
-
-int DVD_WriteDriveMemBlock(u32 dwAddress, void* pData, u32 dwSize)
-{
-	u32* pSource = (u32*)pData;
-//	u32 dwDest = dwAddress;
-	int nLeft = dwSize;
-
-	while (nLeft > 0)
-	{
-		DVD_WriteDriveMemDword(dwAddress, *pSource++);
-		dwAddress += 4;
-		nLeft -= 4;
-	}
+	DVD_SetDebugMode1();
+	DVD_SetDebugMode2();
+	
 	return 0;
 }
 
@@ -150,4 +144,17 @@ int DVD_WriteDriveMemDword(u32 dwAddress, u32 dwData)
 	return 0;
 }
 
-#endif
+int DVD_WriteDriveMemBlock(u32 dwAddress, void* pData, u32 dwSize)
+{
+	u32* pSource = (u32*)pData;
+//	u32 dwDest = dwAddress;
+	int nLeft = dwSize;
+
+	while (nLeft > 0)
+	{
+		DVD_WriteDriveMemDword(dwAddress, *pSource++);
+		dwAddress += 4;
+		nLeft -= 4;
+	}
+	return 0;
+}
