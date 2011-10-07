@@ -15,10 +15,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zlib.h>
+//#include <zlib.h>
+#include <ogc/lwp_watchdog.h>
 
 #include "title_bmp.h"
-#include "dvd.h"
+
+extern "C" {
+	#include "dvd.h"
+}
 
 /*** some variables ***/
 
@@ -39,6 +43,8 @@
 #define DVD_WriteFlashBlock	(IMAGEBASE + 0x0a)	
 #define DVD_UnloadQcode		(IMAGEBASE + 0x0D)
 #define DVD_ReadFlashBlock	(IMAGEBASE + 0x10)
+
+#define IS_PORTED 1
 
 /*** included binaries ***/
 extern const u8 flashloader_bin[];
@@ -61,7 +67,7 @@ GXRModeObj *vmode;	// Graphics Mode Object
 u32 *xfb = NULL;	// Framebuffer
 int dvdstatus = 0;
 
-static u8 dvdbuffer[2048] ATTRIBUTE_ALIGN (32);    // One Sector
+//static u8 dvdbuffer[2048] ATTRIBUTE_ALIGN (32);    // One Sector
 dvdcmdblk cmdblk;
 
 /*---------------------------------------------------------------------------------
@@ -158,7 +164,7 @@ void CheckDriveState(bool bWaitForXenoUnload)
 		u32 dwStatus = DVD_RequestError();
 		u32 dwIntVec = DVD_ReadDriveMemDword(0x804c);
 
-		if((dwIntVec != 0xDDDDDDDD) && (dwIntVec != 0) || (PAD_ButtonsDown(0) & PAD_BUTTON_B)) {
+		if(((dwIntVec != 0xDDDDDDDD) && (dwIntVec != 0)) || (PAD_ButtonsDown(0) & PAD_BUTTON_B)) {
 			if(bWaitForXenoUnload) {
 				if(dwIntVec != 0x02C64000) {
 					//unloaded!
@@ -240,7 +246,7 @@ bool FlashUpdate()
 	printf("\x1b[17D");
 
 #if IS_PORTED
-        u32 dwTime = GC_GetTime() >> 15;
+        u32 dwTime = gettime() >> 15;
 
 	u8* pROM = (u8*) XenoAT_bin;
 	
@@ -272,7 +278,7 @@ bool FlashUpdate()
 		pROM += CHUNKSIZE;
 	}
 
-	dwTime = (GC_GetTime() >> 15) - dwTime;
+	dwTime = (gettime() >> 15) - dwTime;
 #else
 //FAKE
 int i;
@@ -286,7 +292,7 @@ for (i=0; i<16; i++) {
 
 	printf("\nDONE!");
 
-    printf("   Time: %d MS", dwTime);
+    printf("   Time: %d MS", (int)dwTime);
 
 	return true;
 }
@@ -302,7 +308,7 @@ unpack_banner (void)
 	inbytes = TITLE_COMPRESSED;
 	outbytes = TITLE_SIZE;
 
-	uncompress (title_banner, &outbytes, title_Bitmap, inbytes);
+//	uncompress (title_banner, &outbytes, title_Bitmap, inbytes);
 }
 
 void DrawTitle()
