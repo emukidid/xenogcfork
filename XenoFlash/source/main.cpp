@@ -122,7 +122,7 @@ void GC_Sleep(u32 dwMiliseconds)
 	}
 }
 
-void CMD_InjectCustomDriveCode()
+/*void CMD_InjectCustomDriveCode()
 {
 #if IS_PORTED
 	u32  dwSize = 0;
@@ -131,14 +131,67 @@ void CMD_InjectCustomDriveCode()
 	// write flashloader
 	dwAddr = (u32 *) flashloader_bin;
 	dwSize = flashloader_bin_size;
+
 	DVD_WriteDriveMemBlock(0xff40D000, dwAddr, dwSize);
 	DVD_CallFunc(DVD_UnloadQcode);
+	GC_Sleep(1); 						// NEED TO SLEEP
 
-	// patch interrupt chain vector to 40D000
-	DVD_WriteDriveMemDword(0x804c, 0x00D04000);
+        // patch interrupt chain vector to 40D000
+        DVD_WriteDriveMemDword(0x804c, 0x00D04000);
+
+	u32 dwIntVec = DVD_ReadDriveMemDword(0x804c);		// MUST READ before leaving...dont know why but it works...
+
+#endif
+}*/
+
+
+void CMD_InjectCustomDriveCode()
+{
+#if IS_PORTED
+	u32  dwSize = 0;
+	u32* dwAddr = 0;
+	printf("\nEntering: CMD_InjectCustomDriveCode");
+	// write flashloader
+	dwAddr = (u32 *) flashloader_bin;
+	dwSize = flashloader_bin_size;
+
+	u32 dwIntVec = DVD_ReadDriveMemDword(0x804c);
+	printf("\nReadDrive 0x804c      BEFORE: %li", dwIntVec);
+	u32 dwIntVec1 = DVD_ReadDriveMemDword(0xff40D000);
+	printf("\nReadDrive 0xff40d000  BEFORE: %li", dwIntVec1);
+
+	DVD_WriteDriveMemBlock(0xff40D000, dwAddr, dwSize);
+	printf("\nDVD_Write   dwAddr, dwSize");
+	
+
+	u32 dwIntVec2 = DVD_ReadDriveMemDword(0x804c);
+	printf("\nReadDrive 0x804c      AFTER: %li", dwIntVec2);
+	u32 dwIntVec3 = DVD_ReadDriveMemDword(0xff40D000);
+	printf("\nReadDrive 0xff40d000  AFTER: %li", dwIntVec3);
+
+	
+	
+	printf("\nDVD_CallFunc: UnloadQcode  BEGIN");
+	DVD_CallFunc(DVD_UnloadQcode);
+	printf("\nDVD_CallFunc: UnloadQcode  END");
+
+	
+	
+	
+        // patch interrupt chain vector to 40D000
+        DVD_WriteDriveMemDword(0x804c, 0x00D04000);
+	printf("\nDVD_Write   patch interrupt");
+
+
+
+	u32 dwIntVec4 = DVD_ReadDriveMemDword(0x804c);
+	printf("\nReadDrive 0x804c      AFTER: %li", dwIntVec4);
+	u32 dwIntVec5 = DVD_ReadDriveMemDword(0xff40D000);
+	printf("\nReadDrive 0xff40d000  AFTER: %li", dwIntVec5);
+
+
 #endif
 }
-
 
 void UnloadXenoGC_Permanent()
 {
