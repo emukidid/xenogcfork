@@ -6,7 +6,7 @@
  in order to program the XenoGC in-system
 
  Created by the XenoGC Team
- Ported to libOGC by dantheman2865, emu_kidid, infact of gc-forever.com
+ Ported to libOGC by dantheman2865, emu_kidid, infact, and megalomaniac of gc-forever.com
 
 ---------------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <zlib.h>
+#include <zlib.h>
 #include <ogc/lwp_watchdog.h>
 
 #include "title_bmp.h"
@@ -44,12 +44,16 @@ extern "C" {
 #define DVD_UnloadQcode		(IMAGEBASE + 0x0D)
 #define DVD_ReadFlashBlock	(IMAGEBASE + 0x10)
 
-#define IS_PORTED 1
+
+// 2D Video Globals
+GXRModeObj *vmode;	// Graphics Mode Object
+u32 *xfb = NULL;	// Framebuffer
+int dvdstatus = 0;      //  << is this even needed ?? remove later
+
 
 /*** included binaries ***/
 extern const u8 flashloader_bin[];
 extern const u32 flashloader_bin_size;
-
 extern const u8 XenoAT_bin[];
 extern const u32 XenoAT_bin_size;
 
@@ -57,19 +61,11 @@ extern const u32 XenoAT_bin_size;
 extern const unsigned char title_Bitmap[];
 static unsigned char title_banner [TITLE_WIDTH * TITLE_HEIGHT * 2] ATTRIBUTE_ALIGN (32);
 
+
 void CheckDriveState(bool bWaitForXenoUnload = true);
-
 u8 pBuffer[FLASHSIZE];
-
-// 2D Video Globals
-
-GXRModeObj *vmode;	// Graphics Mode Object
-u32 *xfb = NULL;	// Framebuffer
-int dvdstatus = 0;
-
 //static u8 dvdbuffer[2048] ATTRIBUTE_ALIGN (32);    // One Sector
-dvdcmdblk cmdblk;
-
+//dvdcmdblk cmdblk;
 /*---------------------------------------------------------------------------------
  Initialise Video
 
@@ -79,147 +75,112 @@ dvdcmdblk cmdblk;
 static void Initialise () {
 //---------------------------------------------------------------------------------
 
-	VIDEO_Init ();
-
-	PAD_Init ();
-
-	vmode = VIDEO_GetPreferredMode(NULL);
+   VIDEO_Init ();
+   PAD_Init ();
+   vmode = VIDEO_GetPreferredMode(NULL);
  
-	// Let libogc configure the mode
-	VIDEO_Configure (vmode);
+   // Let libogc configure the mode
+   VIDEO_Configure (vmode);
+   xfb = (u32 *) MEM_K0_TO_K1 (SYS_AllocateFramebuffer (vmode));
 
-	xfb = (u32 *) MEM_K0_TO_K1 (SYS_AllocateFramebuffer (vmode));
-
-
-	// Define a console
-	console_init (xfb, 20, 64, vmode->fbWidth, vmode->xfbHeight,
-	vmode->fbWidth * 2);
+   // Define a console
+   console_init (xfb, 20, 64, vmode->fbWidth, vmode->xfbHeight, vmode->fbWidth * 2);
  
-	// Clear framebuffer to black
-	VIDEO_ClearFrameBuffer (vmode, xfb, COLOR_BLACK);
+   // Clear framebuffer to black
+   VIDEO_ClearFrameBuffer (vmode, xfb, COLOR_BLACK);
 
-	/*** Set the framebuffer to be displayed at next VBlank ***/
-	VIDEO_SetNextFramebuffer (xfb);
+   // Set the framebuffer to be displayed at next VBlank
+   VIDEO_SetNextFramebuffer (xfb);
+   VIDEO_SetBlack (0);
  
-	VIDEO_SetBlack (0);
- 
-	// Update the video for next vblank 
-	VIDEO_Flush ();
-  
-	VIDEO_WaitVSync ();
-
-	if (vmode->viTVMode & VI_NON_INTERLACE)
-		VIDEO_WaitVSync ();
-
+   // Update the video for next vblank 
+   VIDEO_Flush ();
+   VIDEO_WaitVSync ();
+   if (vmode->viTVMode & VI_NON_INTERLACE)
+      VIDEO_WaitVSync ();
 }
 
 // Simple Delay based on 60Hz refresh rate (great for debugging drivecode)
 void GC_Sleep(u32 dwMiliseconds)
 {
-	int nVBlanks = (dwMiliseconds / 16);
-	while(nVBlanks-- > 0) {
-		VIDEO_WaitVSync();
-	}
+   int nVBlanks = (dwMiliseconds / 16);
+   while(nVBlanks-- > 0) {
+      VIDEO_WaitVSync();
+   }
 }
-
-/*void CMD_InjectCustomDriveCode()
-{
-#if IS_PORTED
-	u32  dwSize = 0;
-	u32* dwAddr = 0;
-
-	// write flashloader
-	dwAddr = (u32 *) flashloader_bin;
-	dwSize = flashloader_bin_size;
-
-	DVD_WriteDriveMemBlock(0xff40D000, dwAddr, dwSize);
-	DVD_CallFunc(DVD_UnloadQcode);
-	GC_Sleep(1); 						// NEED TO SLEEP
-
-        // patch interrupt chain vector to 40D000
-        DVD_WriteDriveMemDword(0x804c, 0x00D04000);
-
-	u32 dwIntVec = DVD_ReadDriveMemDword(0x804c);		// MUST READ before leaving...dont know why but it works...
-
-#endif
-}*/
-
 
 void CMD_InjectCustomDriveCode()
 {
-#if IS_PORTED
-	u32  dwSize = 0;
-	u32* dwAddr = 0;
-	printf("\nEntering: CMD_InjectCustomDriveCode");
-	// write flashloader
-	dwAddr = (u32 *) flashloader_bin;
-	dwSize = flashloader_bin_size;
+   u32  dwSize = 0;
+   u32* dwAddr = 0;
 
-	u32 dwIntVec = DVD_ReadDriveMemDword(0x804c);
-	printf("\nReadDrive 0x804c      BEFORE: %li", dwIntVec);
-	u32 dwIntVec1 = DVD_ReadDriveMemDword(0xff40D000);
-	printf("\nReadDrive 0xff40d000  BEFORE: %li", dwIntVec1);
+   // write flashloader
+   dwAddr = (u32 *) flashloader_bin;
+   dwSize = flashloader_bin_size;
+   DVD_WriteDriveMemBlock(0xff40D000, dwAddr, dwSize);
 
-	DVD_WriteDriveMemBlock(0xff40D000, dwAddr, dwSize);
-	printf("\nDVD_Write   dwAddr, dwSize");
-	
+   printf("..");
+   DVD_CallFunc(DVD_UnloadQcode);
+   printf("..");
 
-	u32 dwIntVec2 = DVD_ReadDriveMemDword(0x804c);
-	printf("\nReadDrive 0x804c      AFTER: %li", dwIntVec2);
-	u32 dwIntVec3 = DVD_ReadDriveMemDword(0xff40D000);
-	printf("\nReadDrive 0xff40d000  AFTER: %li", dwIntVec3);
-
-	
-	
-	printf("\nDVD_CallFunc: UnloadQcode  BEGIN");
-	DVD_CallFunc(DVD_UnloadQcode);
-	printf("\nDVD_CallFunc: UnloadQcode  END");
-
-	
-	
-	
-        // patch interrupt chain vector to 40D000
-        DVD_WriteDriveMemDword(0x804c, 0x00D04000);
-	printf("\nDVD_Write   patch interrupt");
-
-
-
-	u32 dwIntVec4 = DVD_ReadDriveMemDword(0x804c);
-	printf("\nReadDrive 0x804c      AFTER: %li", dwIntVec4);
-	u32 dwIntVec5 = DVD_ReadDriveMemDword(0xff40D000);
-	printf("\nReadDrive 0xff40d000  AFTER: %li", dwIntVec5);
-
-
-#endif
+   // patch interrupt chain vector to 40D000
+   DVD_WriteDriveMemDword(0x804c, 0x00D04000);
 }
 
+/*  Dont need this, moved this single call function below in InitDrive()
 void UnloadXenoGC_Permanent()
 {
-	printf("\nstopping drive...");
+	printf("\nstopping drive...\n");
 
 #if IS_PORTED
 	DVD_CustomDbgCommand(0xE3000000, 0, 0, 0);
 	CheckDriveState(false);
 #endif
 }
-
+*/
 
 void CheckDriveState(bool bWaitForXenoUnload)
 {
-#if IS_PORTED
-	int nTry = 0;
 
+	int nTry = 0;
+//	printf("Check Drive State");
 	while(true) {
 
 		GC_Sleep(100);
-		
+//	printf(".");
 		DVD_SetDebugMode();
+//	printf(".");
 		u32 dwStatus = DVD_RequestError();
+//	printf(".");
 		u32 dwIntVec = DVD_ReadDriveMemDword(0x804c);
+//	printf(".");
+	
+	
+	
+//	printf("DVD Error: %li\n", dwStatus);
+//	printf("ReadDrive 0x804c:           %li\n", dwIntVec);
+//	u32 dwIntVec8 = DVD_ReadDriveMemDword(0x40D800);
+//	printf("ReadDrive 0x40D800    AFTER: %li\n", dwIntVec8);
+//		GC_Sleep(100);
+		
+//		DVD_SetDebugMode();
+//		u32 dwStatus1 = DVD_RequestError();
+
+//	printf("DVD Error: %li\n", dwStatus1);
+//	u32 dwIntVec8 = DVD_ReadDriveMemDword(0x804c);		// MUST READ before leaving...dont know why but it works...
+//	printf("ReadDrive 0x804c      AFTER: %li\n", dwIntVec8);
+//	u32 dwIntVec9 = DVD_ReadDriveMemDword(0x804c);
+//	printf("ReadDrive 0x804c      AFTER: %li\n", dwIntVec9);
+//	u32 dwIntVec9 = DVD_ReadDriveMemBlock(0x40D000, pBuffer, CHUNKSIZE);
+//	printf("ReadDrive 0x40D800    AFTER: %li\n", dwIntVec9);
+	
+//	u32 dwIntVec10 = DVD_ReadDriveMemDword(0x40D000);
+//	printf("ReadDrive 0x40D000:         %li\n", dwIntVec10);
 
 		if(((dwIntVec != 0xDDDDDDDD) && (dwIntVec != 0)) || (PAD_ButtonsDown(0) & PAD_BUTTON_B)) {
 			if(bWaitForXenoUnload) {
 				if(dwIntVec != 0x02C64000) {
+//				  printf("unloaded!\n");
 					//unloaded!
 					GC_Sleep(500);
 					return;
@@ -231,123 +192,110 @@ void CheckDriveState(bool bWaitForXenoUnload)
 			}
 		}
 
-		if(++nTry > 120) {
-			printf("error!");
+		if(++nTry > 5) {//120) {
+			printf("error!\n\n");
 			return;
 		}
 	}
-#endif
 }
 
 bool IsXenoDrivecode()
 {
-#if IS_PORTED
-	DVD_SetDebugMode();
-	DVD_WaitImmediate();
-	
-	u32 dwIntVec = DVD_ReadDriveMemDword(0x804c);
-	return (dwIntVec == 0x02C64000);
-#else
-return 0;
-#endif
+   DVD_SetDebugMode();
+   DVD_WaitImmediate();
+
+   u32 dwIntVec = DVD_ReadDriveMemDword(0x804c);
+   return (dwIntVec == 0x02C64000);
+}
+
+bool helper()
+{
+   DVD_CallFunc(DVD_FlashEnable);
+   CheckDriveState(false);
+   DVD_CallFunc(DVD_FlashErase);
+   GC_Sleep(1000);
+   CheckDriveState(false);	
+   return true;
 }
 
 bool FlashInit()
 {
-	//set red bg color
-	printf("\x1b[37m \x1b[41m");
-	printf("\n\nFlash init......");
+   //set red bg color
+   printf("\x1b[31mFlash init...");
 
-#if IS_PORTED
-	DVD_CallFunc(DVD_FlashEnable);
-	CheckDriveState(false);
-#endif
-
-	printf("done");
-
-	return true;
+   DVD_CallFunc(DVD_FlashEnable);
+   CheckDriveState(false);
+	printf(".");
+   return true;
 }
 
 bool FlashErase()
 {
-	printf("\nErasing flash...");
+   printf("Erasing flash...");
+   DVD_CallFunc(DVD_FlashErase);
+   GC_Sleep(1000);
+   CheckDriveState(false);	
 
-#if IS_PORTED
-	DVD_CallFunc(DVD_FlashErase);
-	GC_Sleep(1000);
-	CheckDriveState(false);	
-#endif
-
-	printf("done");
-	return true;
+   printf("done\n");
+   return true;
 }
 
 void SetFlashAddress(u32 dwAddress)
 {
-#if IS_PORTED
-	dwAddress /= 2;
-	u32 dwFlashAddressCmd = (((dwAddress & 0xff) << 8) | ((dwAddress >> 8) & 0xFF));
-	DVD_WriteDriveMemDword(DRIVEMEM_BINARY-4, dwFlashAddressCmd);
-#endif
+   dwAddress /= 2;
+   u32 dwFlashAddressCmd = (((dwAddress & 0xff) << 8) | ((dwAddress >> 8) & 0xFF));
+   DVD_WriteDriveMemDword(DRIVEMEM_BINARY-4, dwFlashAddressCmd);
+
 }
 
 bool FlashUpdate()
 {
-	printf("\nFLASHING........[                ]");
+   printf("FLASHING........[                ]");
 
-	//move cursor 17 chars left
-	printf("\x1b[17D");
+   //move cursor 17 chars left
+   printf("\x1b[17D");
 
-#if IS_PORTED
-        u32 dwTime = gettime() >> 15;
 
-	u8* pROM = (u8*) XenoAT_bin;
-	
-	for(u32 dwAddress = 0; dwAddress < FLASHSIZE; dwAddress += CHUNKSIZE) {
+   u32 dwTime = gettime() >> 15;
 
-		// set next address to flash to
-		SetFlashAddress(dwAddress);
+   u8* pROM = (u8*) XenoAT_bin;
 
-		// write one chunk
-		DVD_WriteDriveMemBlock(DRIVEMEM_BINARY, pROM, CHUNKSIZE);
-		DVD_CallFunc(DVD_WriteFlashBlock);
-		CheckDriveState(false);
 
-		#if VERIFY_FLASH == 1
-			// verify chunk
-			DVD_CallFunc(DVD_ReadFlashBlock);
-			CheckDriveState(false);
-			DVD_ReadDriveMemBlock(0x40D800, pBuffer, CHUNKSIZE);
+   for(u32 dwAddress = 0; dwAddress < FLASHSIZE; dwAddress += CHUNKSIZE) {
 
-			if(memcmp(pBuffer, pROM, CHUNKSIZE)) {
-				printf("X");
-			}
-		#endif
+      // set next address to flash to
+      SetFlashAddress(dwAddress);
 
-		if(dwAddress % (FLASHSIZE/16) == 0) {
-			printf("*");
-		}
+      // write one chunk
+      DVD_WriteDriveMemBlock(DRIVEMEM_BINARY, pROM, CHUNKSIZE);
+      DVD_CallFunc(DVD_WriteFlashBlock);
+      CheckDriveState(false);
 
-		pROM += CHUNKSIZE;
-	}
+      #if VERIFY_FLASH == 1
+         // verify chunk
+         //printf("verify one chunk\n");
+         DVD_CallFunc(DVD_ReadFlashBlock);
+         //printf("Set to ReadFlashBlock chunk\n");
+         CheckDriveState(false);
+         DVD_ReadDriveMemBlock(0x40D800, pBuffer, CHUNKSIZE);
+         //printf("ReadDriveMemBlock\n");
+         if(memcmp(pBuffer, pROM, CHUNKSIZE)) {
+            printf("X");
+         }
+      #endif
 
-	dwTime = (gettime() >> 15) - dwTime;
-#else
-//FAKE
-int i;
-u32 dwTime = 9999;
+      if(dwAddress % (FLASHSIZE/16) == 0) {
+         printf("*");
+      }
 
-for (i=0; i<16; i++) {
-	GC_Sleep(200);
-	printf("#");
-}
-#endif
+      pROM += CHUNKSIZE;
+   }
 
-	printf("\nDONE!");
+   dwTime = (gettime() >> 15) - dwTime;
+   printf("\n\x1b[32mDONE!");
+   printf("   \x1b[37mTime: %d MS\n", (int)dwTime);
 
-    printf("   Time: %d MS", (int)dwTime);
-
-	return true;
+   return true;
 }
 
 /****************************************************************************
@@ -356,112 +304,138 @@ for (i=0; i<16; i++) {
 static void
 unpack_banner (void)
 {
-	unsigned long inbytes, outbytes;
+   unsigned long inbytes, outbytes;
 
-	inbytes = TITLE_COMPRESSED;
-	outbytes = TITLE_SIZE;
+   inbytes = TITLE_COMPRESSED;
+   outbytes = TITLE_SIZE;
 
-//	uncompress (title_banner, &outbytes, title_Bitmap, inbytes);
+   uncompress (title_banner, &outbytes, title_Bitmap, inbytes);
 }
 
 void DrawTitle()
 {
-	int y, x, j;
-	int offset;
-	int *bb = (int *) title_banner;
+   int y, x, j;
+   int offset;
+   int *bb = (int *) title_banner;
 
-	offset = (12 * 320); /*** start 10 lines from top ***/
-	
-	VIDEO_ClearFrameBuffer (vmode, xfb, COLOR_BLACK);
+   offset = (12 * 320); /*** start 10 lines from top ***/
 
-	for (y = 0, j = 0; y < TITLE_HEIGHT; y++)
-	{
-		for (x = 0; x < (TITLE_WIDTH >> 1); x++)
-			xfb[offset + x] = bb[j++];
+   VIDEO_ClearFrameBuffer (vmode, xfb, COLOR_BLACK);
 
-	      offset += 320;
-	}
+   for (y = 0, j = 0; y < TITLE_HEIGHT; y++)
+   {
+      for (x = 0; x < (TITLE_WIDTH >> 1); x++)
+         xfb[offset + x] = bb[j++];
 
-	//set white color, console position
-	printf("\x1b[37m\x1b[6;40f");
-	printf("openXenoGC flash update 0.01\n");
+         offset += 320;
+   }
 
-	VIDEO_Flush ();
-	VIDEO_WaitVSync ();
+   //set white color, console position
+   printf("\x1b[37m\x1b[6;40f");
+   printf("openXenoGC flash updater");// 0.01\n");
+
+   VIDEO_Flush ();
+   VIDEO_WaitVSync ();
 }
 
 void InitDrive()
 {
-	//set blue color
-	printf("\x1b[36m");
+// printf("\x1b[34m");  //set blue color  << too damn dark
+   printf("\x1b[36m");  //set blue cyan   << better
 
-#if IS_PORTED
-	// unload xeno if active
-	if(IsXenoDrivecode()) {
-		UnloadXenoGC_Permanent();
-		GC_Sleep(1000);
-	}
-#endif
+   // unload xeno if active
+   if(IsXenoDrivecode()) {
+      printf("stopping drive...\n");
+      DVD_CustomDbgCommand(0xE3000000, 0, 0, 0);
+      CheckDriveState(false);
+   }
 
-	// upload the flash programming drivecode
-	printf("\n\nUploading flash-app to drive...");
+   // upload the flash programming drivecode
+   printf("Uploading flash-app to drive...");
+   CMD_InjectCustomDriveCode();
+   printf("done");
+   
+   // make sure drive is ready
+   printf("Wait for XenoUnload...");
+   CheckDriveState(true);
 
-#if IS_PORTED
-	CMD_InjectCustomDriveCode();
-#else
-//FAKE
-GC_Sleep(1000);
-#endif
-
-	printf("done.");
-
-#if IS_PORTED
-	// make sure drive is ready
-	CheckDriveState(true);
-
-	// enable dbg mode again(!)
-	DVD_SetDebugMode();
-	DVD_WaitImmediate();
-#endif
+   // enable dbg mode again(!)
+   DVD_SetDebugMode();
+   DVD_WaitImmediate();
 }
 
 //---------------------------------------------------------------------------
 int main ()
 //--------------------------------------------------------------------------
 {
-	Initialise ();
+   Initialise ();
 
-	// show title
-	unpack_banner();
-	DrawTitle();
-	
-	// assure drive is ready
-	InitDrive();
+   // show title
+   unpack_banner();
+   DrawTitle();
+   printf("\n\nXenoGC flash v1.03a-v1\n");
 
-	//set green color
-	printf("\x1b[32m");
-	printf("\n\nSet flash switch to [ON] position now");
-	printf("\nthen press A to start flashing.");
 
-	while(1) {
+   // assure drive is ready
+   InitDrive();
+   printf("READY!!\n\n");
 
-		VIDEO_WaitVSync();
-		PAD_ScanPads();
+   //set green color
+   printf("\x1b[32m");
+   printf("Set flash switch to \x1b[31m[ON]\x1b[32m position now\n");
+   printf("then press A to start flashing.\n\n");
 
-		int buttonsDown = PAD_ButtonsDown(0);
+   while(1) {
 
-		if(buttonsDown & PAD_BUTTON_A) {
-			// programm the chip
-			FlashInit();
-			FlashErase();
-			FlashUpdate();
+      VIDEO_WaitVSync();
+      PAD_ScanPads();
 
-			//set blue color, black background
-			printf("\x1b[36m \x1b[40m");
-			printf("\n\nSet flash switch back to [OFF] then reboot.");
-			while (1) VIDEO_WaitVSync(); /*** loop till death ***/
-		}
-	}
+      int buttonsDown = PAD_ButtonsDown(0);
+/*
+      if(buttonsDown & PAD_BUTTON_B) {
+         // flash init, not really needed
+         //    used for initial testing to help get code working
+         //    remove this later
+         FlashInit();
+      }
+*/
+      if(buttonsDown & PAD_BUTTON_A) {
+         // program the chip
+         //   after programming complete, turn switch off and check led status
+         //   if led is lit, then done, else turn switch on and flash again 
+         FlashInit();
+         // FlashErase();
+         FlashUpdate();
 
-    return 0;
+         //set blue color, black background
+         printf("\x1b[36m \x1b[40m");
+         printf("\n\nSet flash switch back to [OFF] then reboot.\n\n");
+         // while (1) VIDEO_WaitVSync(); /*** loop till death ***/
+      }
+
+      if(buttonsDown & PAD_BUTTON_Y) {
+         // erase the chip
+         //   need to erase twice then turn xeno switch off
+         //   check led status 
+         //   if no leds lit, then turn switch on and flash
+         //   if led is lit, then erase was not performed
+         //   turn swithc on and try erase again
+         FlashInit();
+         GC_Sleep(1000);
+         FlashErase();
+      }
+/*
+      if(buttonsDown & PAD_BUTTON_X) {
+         //-----------------------------------------------
+         // read back flash data
+         //-----------------------------------------------
+         FlashInit();
+         printf("reading flash...\n");
+         DVD_CallFunc(DVD_ReadFlashBlock);
+         CheckDriveState(false);
+         printf("\ndone\n\n");
+      } */
+   }
+
+   return 0;
 }
