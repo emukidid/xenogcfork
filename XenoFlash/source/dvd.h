@@ -43,3 +43,7 @@ int DVD_WaitImmediate();
 int DVD_WriteDriveMemBlock(u32 dwAddress, void* pData, u32 dwSize);
 
 int DVD_WriteDriveMemDword(u32 dwAddress, u32 dwData);
+
+int DVD_ReadDriveMemBlock(u32 dwAddress, void* pData, u32 dwSize);
+
+void dvd_unlock();
