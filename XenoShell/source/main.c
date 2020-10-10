@@ -658,7 +658,7 @@ int main(void)
 	InitSystem(*(u8*)(MEM_TEMP+0x55) == 'P');
 	cls();
 	
-	print("XenoShell\nCustom v1.0 ");
+	print("XenoShell\nCustom vincent");
 	print(vidHeight == HEIGHT_PAL ? "PAL":"NTSC");
 	print("\n--------------\n");
 
