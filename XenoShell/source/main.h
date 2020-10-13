@@ -150,6 +150,8 @@ typedef struct
 	BlockMap backupBlockMap;
 } MemCard;
 
+#define XENO_DOL_NAME "xeno.dol"
+
 /*** dvd stuff ***/
 #define MEM32(_x)		*(u32*)_x		//---------------------------------------------------------------------------------------------------
 #define DVD_DISR		MEM32( 0xcc006000 )	// DI Status Register

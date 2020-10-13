@@ -717,28 +717,27 @@ void BootFromMemcard(u8 slotB)
 
 	MemCard* memCard = (MemCard*)pLoadPos;
 
-	// Copy the block map on the stack so we can as we'll overwrite pLoadPos as soon as we've found the dol
-	// u16 blockMapArray[0x0ffd];
-	// memcpy8(blockMapArray, memCard->blockMap.blockMapArray, 0x0ffd);
+	// Copy the block map on the stack as we'll overwrite pLoadPos as soon as we find the dol and copy it there.
+	u16 blockMapArray[0x0ffd];
+	memcpy8(blockMapArray, memCard->blockMap.blockMapArray, 0x0ffd);
 
 	for(int i = 0; i < DIRECTORY_MAX_SIZE; i++)
 	{
 		DirectoryEntry* entry = &(memCard->directory.entries[i]);
-		if(memcmp8("xeno.dol", entry->filename, 8))
+		if(memcmp8(XENO_DOL_NAME, entry->filename, sizeof(XENO_DOL_NAME) - 1)) // exclude \0
 		{
-			//print("Found \"xeno.dol\"\n");
-
 			u16 blockIndex = entry->firstBlockIndex + 1;
 			u16 fileLength = entry->fileLength;
 
 			int c = 0;
-			while(fileLength > 0 && blockIndex != LAST_BLOCK)
+			while(c < fileLength && blockIndex != LAST_BLOCK)
 			{
 				ReadMemoryCardBlock(blockIndex, pLoadPos + c * MEMCARD_BLOCK_SIZE);	
 				c++;
-				fileLength--;
-				blockIndex++;
-				//blockIndex = blockMapArray[blockIndex];
+				
+				// The first 5 blocks for the memcard header aren't referenced in the block map
+				// So we the entries actually live in index i - 5
+				blockIndex = blockMapArray[blockIndex - 5];
 			}
 
 			// print("booting dol...\n");
@@ -756,7 +755,6 @@ int main(void)
 	BootFromMemcard(0);
 
 	// Let's init the video systems to error out if we didn't find the dol in either memory card.
-
 	ipl_set_config();
 	ipl_read((u8*)MEM_TEMP, 0, 256);
 	init_font();
@@ -765,8 +763,9 @@ int main(void)
 	InitSystem(*(u8*)(MEM_TEMP+0x55) == 'P');
 	cls();
 
-	print("Could not find xeno.dol\n");
-	print("Please switch off your console.\n");
+	print("Could not find:\n");
+	print(XENO_DOL_NAME);
+	print("\nturn off your GC \n And make sure it's\n on either MemCard");
 	
 	while(1);
 
