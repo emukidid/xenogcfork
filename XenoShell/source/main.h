@@ -7,6 +7,8 @@ typedef volatile u8		vu8;
 typedef volatile u16	vu16;
 typedef volatile u32	vu32;
 
+#define BS_ADDRESS 0x80800000
+
 /*** memory layout ***/
 #define MEM_TEMP		0x81000000
 #define MEM_WORK		0x81010000
@@ -69,9 +71,84 @@ typedef struct {
 } tb_t;
 
 /*** memcard stuff ***/
-#define BLOCK_SIZE		512
+#define MEMCARD_EXI_READ_SIZE		0x200
+#define MEMCARD_BLOCK_SIZE			0x2000
 #define DOLSIZE			(500 * 1024)	// 512kb DOL
 #define DOLSEARCH_RANGE		0x1000000	// (16Mb Card MAX)
+
+#define MEMCARD_A_EXI_REG_BASE 0xCC006800
+#define MEMCARD_B_EXI_REG_BASE 0xCC006814
+
+struct MemCardHeader_t
+{
+	u8 unknown[12];
+	u8 ostimeValue[8];
+	u8 unknown2[12];
+	u16 zeropadding;
+	u16 memcardSizeInBits;
+	u16 encoding;
+	u8 unused[468];
+	u16 updateCounter;
+	u16 checksum1;
+	u16 checksum2;
+	u8 unused2[7680]
+} __attribute__((__packed__));
+
+typedef struct MemCardHeader_t MemCardHeader;
+
+struct DirectoryEntry_t
+{
+	u32 gamecode;
+	u16 makercode;
+	u8 unused;
+	u8 animKey;
+	char filename[32]; // Ptr to a 32 char string
+	u32 timestamp;
+	u32 imageDataOffset;
+	u16 iconsgfxformat;
+	u16 iconsanimspeed;
+	u8 filePermission;
+	u8 copyCounter;
+	u16 firstBlockIndex;
+	u16 fileLength;
+	u16 unused2;
+	char* commentsStrings; // Apparently points to 2 32 char strings that must fit in a single block 
+} __attribute__((__packed__));
+
+typedef struct DirectoryEntry_t DirectoryEntry;
+
+struct Directory_t
+{
+	DirectoryEntry entries[128];
+} __attribute__((__packed__));
+
+typedef struct Directory_t Directory;
+
+struct BlockMap_t
+{
+	u16 checksum1;
+	u16 checksum2;
+	u16 updateCounter;
+	u16 numFreeBlocks;
+	u16 lastAllocatedBlockindex;
+	u16 blockMapArray[0x0ffd];
+} __attribute__((__packed__));
+
+typedef struct BlockMap_t BlockMap;
+
+#define INVALID_BLOCK 0x0000
+#define LAST_BLOCK 0xFFFF
+
+#define DIRECTORY_MAX_SIZE 128
+
+typedef struct
+{
+	MemCardHeader header;
+	Directory directory;
+	Directory backupDirectory;
+	BlockMap blockMap;
+	BlockMap backupBlockMap;
+} MemCard;
 
 /*** dvd stuff ***/
 #define MEM32(_x)		*(u32*)_x		//---------------------------------------------------------------------------------------------------

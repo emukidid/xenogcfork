@@ -29,7 +29,7 @@ linux-extra:
 # WINDOWS
 windows-shell:
 	$(MAKE) -f XenoShell/Makefile-WIN
-
+	cp XenoShell/XenoShell.bin XenoAT/source/XenoShell.bin
 windows-hex:
 	$(MAKE) -f XenoAT/Makefile-WIN
 
