@@ -7,7 +7,7 @@
   * emu_kidid, ...
   * 
   * Xenoboot by vingt-2
-  * https://github.com/vingt-2
+  * https://github.com/vingt-2/xenogcfork
   */
 
 #include "main.h"
@@ -17,24 +17,13 @@
 #define HEIGHT_NTSC 480
 #define HEIGHT_PAL 576
 
-/*** memcard mode ***/
-#define MCMODE 1
-
 u32 *fb = (u32*) (MEM_FB2 + YBORDEROFFSET);
 u32 vidHeight = HEIGHT_NTSC;
-u32 g_aMBTable[0x50 / 4] __attribute__((aligned(32)));
 u16 g_nX = 32, g_nY = 0;
 
 /*** set exi base address ***/
 volatile u32* ebase = (u32*) 0xCC006800;
 int font_offset[256], font_size[256], font_height;
-
-volatile long *dvd = (volatile long *) 0xCC006000;
-
-u16 GetNextBlock(u16 blockIndex, BlockMap* blockMap)
-{
-	return blockMap->blockMapArray[blockIndex];
-}
 
 /*** extern function definitions ***/
 
@@ -65,17 +54,6 @@ static void memset32(u32* pDest, u32 dwVal, u32 dwSize)
 	}
 }
 
-static u8 memcmp32(u32* pDest, u32* pSrc, u32 dwSize)
-{
-	while(dwSize -=4 ) {
-		if(*pDest++ != *pSrc++) {
-			return 0;
-		}
-	}
-
-	return 1;
-}
-
 static u8 memcmp8(u8* pDest, u8* pSrc, u32 dwSize)
 {
 	while(dwSize--)
@@ -84,14 +62,6 @@ static u8 memcmp8(u8* pDest, u8* pSrc, u32 dwSize)
 			return 0;
 	}
 	return 1;
-}
-
-static void memset8(u8* pDest, u8 dwVal, u32 dwSize)
-{
-	while(dwSize--) 
-	{
-		*pDest++ = dwVal;
-	}
 }
 
 static void memcpy8(u8* pDest, u8* pSrc, u32 dwSize)
@@ -298,16 +268,20 @@ static void cls()
 
 static void print(const char *string)
 {
-	if(g_nY >= 460) {
+	if(g_nY >= 460) 
+	{
 		cls();
 	}
 	
-	while((*string)) {
-		if((*string) == '\n') {
+	while((*string)) 
+	{
+		if((*string) == '\n')
+		{
 			g_nY += 24;
 			g_nX = 0;
 		}
-		else {
+		else
+		{
 			blit_char(g_nX, g_nY, *string);
 			g_nX += font_size[(int) *string]-2;
 		}
@@ -315,7 +289,8 @@ static void print(const char *string)
 		string++;
 	}
 
-	if(g_nY >= 460) {
+	if(g_nY >= 460) 
+	{
 		cls();
 	}
 }
@@ -342,198 +317,18 @@ static void GC_Sleep(u32 dwMiliseconds)
 	}
 }
 
-/*** dol loading from memcard ***/
-
-void fn_load_dol_fn_inmem(void *dol)
-{
-	struct dol_s {
-		u32 sec_pos[18];
-		u32 sec_address[18];
-		u32 sec_size[18];
-		u32 bss_address, bss_size, entry_point;
-	} *d = (struct dol_s*)dol;
-	
-	int i;
-	for (i=0; i<18; ++i) {
-		if (!d->sec_size[i])
-			continue;
-		
-		// copy section
-		int nCount = d->sec_size[i];
-		char *pDest = (char *) (void*)d->sec_address[i], *pSrc = (char *) ((u8*)dol)+d->sec_pos[i];
-		while (nCount--)
-			*pDest++ = *pSrc++;
-		dcache_flush_icache_inv((void*)d->sec_address[i], d->sec_size[i]);
-	}
-	
-	// clear BSS
-	int nCount = d->bss_size;
-	char *pDest = (char *) d->bss_address;
-	while (nCount--)
-		*pDest++ = 0;
-		
-	SetMSR((GetMSR() | 2) & ~0x8000);
-	SetMSR(GetMSR() & ~0x8000); // EE
-	SetMSR(GetMSR() | 0x2002);  // FP, RI
-	
-	void (*entrypoint)() = (void(*)())d->entry_point;
-	entrypoint();
-}
-
-
-
-/*	channel	device	freq	offset		Description
-	-------------------------------------------------------------
-	0 		0 		4 	  				Memory Card (Slot A)
-	0 		1 		3 		0x00000000 	Mask ROM
-	0 		1 		3 		0x20000000 	Real-Time Clock (RTC)
-	0 		1 		3 		0x20000100 	SRAM
-	0 		1 				0x20010000 	UART
-	1 		0 		4 	  				Memory Card (Slot B)
-	2 		0 	  						AD16 (trace step)
-	0 		2 	  	  					Serial Port 1
-	0 		2 		5 	  				Ethernet Adapter (SP1)
-*/
-
-
-static void EXIReadMemoryCard(u32 dwOffset, void *pData, u32 dwSize)
-{
-	u32 cmd;
-	u8* pCMD = (u8*)&cmd; 
-
-	EXI_SR = 0x4A5;
-
- 	// read command and block offset 31-8
-	pCMD[0] = 0x52;
-	pCMD[1] = (dwOffset >> 17) & 0x3F;
-	pCMD[2] = (dwOffset >> 9) & 0xFF;
-	pCMD[3] = (dwOffset >> 7) & 3;
-
-	// Send the first 4 bytes of the command
-	exi_write_word(cmd);
-	
-	// Then send the last byte
-	EXI_DATA = (dwOffset & 0x7F);
-	EXI_CR = 0x05;
-	EXI_WAIT_EOT;
-
-	u8 dummy[4] = { 0, 0, 0, 0 };
-	// dummy write
-	exi_write_word(0x00000000);
-
-	// read data
-	exi_read((u8*)pData, dwSize);
-	EXI_SR &= ~0x80;
-}
-
-static void ReadMemoryCardBlock(int blockIndex, void* pDest)
-{
-	for(int i = 0; i < 16; i++)
-	{
-		EXIReadMemoryCard(0x2000 * blockIndex + 0x200 * i, ((u8*)pDest + 0x200 * i), 0x200);
-	}
-}
-
-/*** dvd stuff ***/
-
-static int DVD_WaitImmediate()
-{
-	u32 nCount = 0;
-
-	while ((dvd[7] & 1)) {
-		if(++nCount > 0xFFFFFF) {
-			return 0;
-		}
-	}
-
-	return 1;
-}
-
-static int DVD_CustomDbgCommand(u32 dwCommand, u32 dwOffset, u32 dwLength, u32* pBuffer)
-{
-	dvd[0] = 0x2e;
-	dvd[1] = 0;
-	dvd[2] = dwCommand;
-	dvd[3] = dwOffset;
-	dvd[4] = dwLength;
-	dvd[5] = (u32) pBuffer;
-	dvd[6] = dwLength;
-	dvd[7] = 1;
-
-	DVD_WaitImmediate();
-
-	if (dvd[0] & 0x04) {
-		return 1;
-	}
-
-	return 0;
-}
-
-static int DVD_ReadId(void *pDst)
-{
-	dvd[0] = 0x2E;
-	dvd[1] = 0;
-	
-	dvd[2] = 0xA8000040;
-	dvd[3] = 0;
-	dvd[4] = 0x40;
-	dvd[5] = (u32) pDst;
-	dvd[6] = 0x40;
-	dvd[7] = 3;
-
-	int nCount = 0;
-
-	while (nCount++ < 0x3ffffff) {
-		if (dvd[0] & 0x4)
-			return 1;
-		if (!dvd[6])
-			return 0;
-	}
-
-  return 0; /*** keep gcc happy ***/
-}
-
-static int DVD_Read(void *pDst, u32 dwBytes, u32 dwOffset)
-{
-	dvd[0] = 0x2E; // 0x54;
-	//dvd[0] |= 0x10;
-	dvd[1] = 0;
-	
-	dvd[2] = 0xA8000000;
-	dvd[3] = dwOffset >> 2;
-	dvd[4] = (u32) dwBytes;
-	dvd[5] = (u32) pDst;
-	dvd[6] = (u32) dwBytes;
-	dvd[7] = 3;
-
-	int nCount = 0;
-	const int c_nErrorTime = 0xF00000;
-
-	while (nCount++ < c_nErrorTime  + 0x1000) {
-		u32 dwStat		= dvd[0];
-		u32 dwDMABytes	= dvd[6];
-
-		if (dwStat & 0x4) {
-			return 1;
-		}
-		if (dwDMABytes == 0) {
-			return 0;
-		}
-	}
-
-  return 0; /*** keep gcc happy ***/
-}
 
 /*** video modes ***/
-
-static const u32 GC_VI_MODE_IRegs_PAL[16] = {
+static const u32 GC_VI_MODE_IRegs_PAL[16] = 
+{
 	0x11F50101, 0x4B6A01B0, 0x02F85640, 0x00010023,
 	0x00000024, 0x4D2B4D6D, 0x4D8A4D4C, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x013C0144,
 	0x113901B1, 0x10010001, 0x00010001, 0x00010001
 };
 
-static const u32 GC_VI_MODE_IRegs_NTSC[16] = {
+static const u32 GC_VI_MODE_IRegs_NTSC[16] = 
+{
 	0x0F060001, 0x476901AD, 0x02EA5140, 0x00030018,
 	0x00020019, 0x410C410C, 0x40ED40ED, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -541,7 +336,8 @@ static const u32 GC_VI_MODE_IRegs_NTSC[16] = {
 };
 
 
-static const u32 GC_VI_MODE_IRegs_Common[16] = {
+static const u32 GC_VI_MODE_IRegs_Common[16] = 
+{
 	0x00000000, 0x00000000, 0x28500100, 0x1AE771F0,
 	0x0DB4A574, 0x00C1188E, 0xC4C0CBE2, 0xFCECDECF,
 	0x13130F08, 0x00080C0F, 0x00FF0000, 0x00000000,
@@ -594,112 +390,105 @@ void InitSystem( u32 VidMode )
 
 	GC_DefaultConfig[43] = VidMode;
 
-	for(Counter=0; Counter<56; Counter++) {
+	for(Counter=0; Counter<56; Counter++) 
+	{
 		pDstAddr[Counter] = pSrcAddr[Counter];
 	}
 
-	if( VidMode == 1 )	{
+	if( VidMode == 1 )	
+	{
 		InitVideo((u32*)GC_VI_MODE_IRegs_PAL);
 		vidHeight = HEIGHT_PAL;
 	}
-	else {
+	else 
+	{
 		InitVideo((u32*) GC_VI_MODE_IRegs_NTSC);
 		vidHeight = HEIGHT_NTSC;
 	}
 }
 
-static void report(const char* szMsg, ...) {
-}
+/*** dol loading from memcard ***/
 
-static u16 ShowMultibootGames()
+void LoadDolAtAddress(void *dol)
 {
-	u16 nGames = 0;
-	u32* pTable = g_aMBTable;
+	struct dol_s 
+	{
+		u32 sec_pos[18];
+		u32 sec_address[18];
+		u32 sec_size[18];
+		u32 bss_address, bss_size, entry_point;
+	} *d = (struct dol_s*)dol;
 	
-	// get table
-	DVD_Read(pTable, 0x50, 0x40);
-
-	// limit to max 16 games
-	pTable[(0x50/4)-4] = 0;
-
-	g_nY = MBLIST_Y;
-
-	while(*pTable != 0) {
-		u32 dwOffset = 	*pTable++;
-		nGames++;
-
-		// Set offset
-		DVD_CustomDbgCommand(0x28000000, (dwOffset / 0x400) << 8, 0x20, 0);
-		// Read Id at this offset
-		DVD_ReadId((void*) 0xC0000000);
-		// Read Game Name
-		DVD_Read((void*) 0xC0800000, 0x40, 0x20);
-		*((u32*)0xC0800014) = 0x2e2e2e00;
-
-		g_nX = 21;
-		print((char*) 0xC0800000);
-		print("\n");
+	int i;
+	for (i=0; i<18; ++i) 
+	{
+		if (!d->sec_size[i])
+			continue;
+		
+		// copy section
+		int nCount = d->sec_size[i];
+		char *pDest = (char *) (void*)d->sec_address[i], *pSrc = (char *) ((u8*)dol)+d->sec_pos[i];
+		while (nCount--)
+			*pDest++ = *pSrc++;
+		dcache_flush_icache_inv((void*)d->sec_address[i], d->sec_size[i]);
 	}
-
-	return nGames;
-}
-
-static void load_apploader()
-{
-	void (*app_init)(void (*report)(const char *fmt, ...));
-	int  (*app_main)(void **dst, int *size, int *offset);
-	void *(*app_final)();
-	void (*app_entry)(void(**init)(void (*report)(const char *fmt, ...)), int (**main)(), void *(**final)());
-
-	u8 *buffer = (u8*)0xC0100000;
-
-	cls();
-	DVD_Read(buffer,0x460,0);
-	print("\nLoading...");
-	InitSystem((buffer[0x45b] == 2) ? 1 : 0);
-
-	DVD_Read(buffer, 0x20, 0x2440);
-	DVD_Read((void*)0x81200000, ((*(u32*)(buffer+0x14)) + 31) &~31,0x2460);
-
-	app_entry = (void (*)(void(**)(void (*)(const char*,...)),int (**)(),void *(**)()))(*(u32*)(buffer + 0x10));
-	app_entry(&app_init,( int (**)()) &app_main,&app_final);
-	app_init((void (*)(const char*,...))report);
 	
-	for(;;) {
-		void *dst = 0;
-		int len = 0, offset = 0;
-		int res = app_main(&dst, &len, &offset);
-
-		if (!res) break;
-		DVD_Read(dst, len, offset);
-	}
-
-	/*** jump to entry point ***/
-	void (*entrypoint)() = (void (*)()) app_final();
+	// clear BSS
+	int nCount = d->bss_size;
+	char *pDest = (char *) d->bss_address;
+	while (nCount--)
+		*pDest++ = 0;
+		
+	SetMSR((GetMSR() | 2) & ~0x8000);
+	SetMSR(GetMSR() & ~0x8000); // EE
+	SetMSR(GetMSR() | 0x2002);  // FP, RI
+	
+	void (*entrypoint)() = (void(*)())d->entry_point;
 	entrypoint();
 }
 
-/*** do the actual menu ***/
-
-void itoa(char* str, int n)
+static void EXIReadMemoryCard(u32 dwOffset, void *pData, u32 dwSize)
 {
-	int dig = 0;
-	while(n)
+	u32 cmd;
+	u8* pCMD = (u8*)&cmd; 
+
+	// Setup to status register for MemCard read (see documentation)
+	EXI_SR = 0x4A5;
+
+ 	// read command and block offset 31-8
+	pCMD[0] = 0x52;
+	pCMD[1] = (dwOffset >> 17) & 0x3F;
+	pCMD[2] = (dwOffset >> 9) & 0xFF;
+	pCMD[3] = (dwOffset >> 7) & 3;
+
+	// Send the first 4 bytes of the command
+	exi_write_word(cmd);
+	
+	// Then send the last byte
+	EXI_DATA = (dwOffset & 0x7F);
+	EXI_CR = 0x05;
+	EXI_WAIT_EOT;
+
+	u8 dummy[4] = { 0, 0, 0, 0 };
+	// dummy write
+	exi_write_word(0x00000000);
+
+	// read data
+	exi_read((u8*)pData, dwSize);
+	EXI_SR &= ~0x80;
+}
+
+static void ReadMemoryCardBlock(int blockIndex, void* pDest)
+{
+	for(int i = 0; i < 16; i++)
 	{
-		int a = n / 10;
-		int c = n - (a*10);
-		str[dig] = '0' + c;
-		dig++;
-		n = a;		 
+		EXIReadMemoryCard(0x2000 * blockIndex + 0x200 * i, ((u8*)pDest + 0x200 * i), 0x200);
 	}
-	str[dig] = 0;
-	dig--;
-	for(int i = 0; i < ((dig+1) / 2); i++)
-	{
-		char t = str[i];
-		str[i] = str[dig - i];
-		str[dig - i] = t;
-	}
+}
+
+u16 GetNextBlock(u16 blockIndex, BlockMap* blockMap)
+{
+	return blockMap->blockMapArray[blockIndex - 5];
 }
 
 void BootFromMemcard(u8 slotB)
@@ -718,15 +507,19 @@ void BootFromMemcard(u8 slotB)
 	MemCard* memCard = (MemCard*)pLoadPos;
 
 	// Copy the block map on the stack as we'll overwrite pLoadPos as soon as we find the dol and copy it there.
-	u16 blockMapArray[0x0ffd];
-	memcpy8(blockMapArray, memCard->blockMap.blockMapArray, 0x0ffd);
+	BlockMap blockMap;
+	memcpy8(&blockMap, &(memCard->blockMap), sizeof(BlockMap));
+
+	// The first 5 blocks for the memcard header aren't referenced in the block map
+	// So the actual entries live at blockIndex - 5
 
 	for(int i = 0; i < DIRECTORY_MAX_SIZE; i++)
 	{
 		DirectoryEntry* entry = &(memCard->directory.entries[i]);
 		if(memcmp8(XENO_DOL_NAME, entry->filename, sizeof(XENO_DOL_NAME) - 1)) // exclude \0
 		{
-			u16 blockIndex = entry->firstBlockIndex + 1;
+			// Swiss uses an extra block for the gci header so we actually start at block + 1
+			u16 blockIndex = GetNextBlock(entry->firstBlockIndex, &blockMap);
 			u16 fileLength = entry->fileLength;
 
 			int c = 0;
@@ -737,11 +530,10 @@ void BootFromMemcard(u8 slotB)
 				
 				// The first 5 blocks for the memcard header aren't referenced in the block map
 				// So we the entries actually live in index i - 5
-				blockIndex = blockMapArray[blockIndex - 5];
+				blockIndex = GetNextBlock(blockIndex, &blockMap);
 			}
 
-			// print("booting dol...\n");
-			fn_load_dol_fn_inmem((u8*)pLoadPos);
+			LoadDolAtAddress((u8*)pLoadPos);
 		}
 	}
 }
@@ -751,21 +543,27 @@ int main(void)
 	memset32((void*)0x80000004, 0, (0x01700000-4)/4);
 	*((u32*)0x80000C00) = 0x4c000064;
 
+	// Try to boot from dol in slot B
 	BootFromMemcard(1);
+	// Try to boot from dol in slot A
 	BootFromMemcard(0);
 
-	// Let's init the video systems to error out if we didn't find the dol in either memory card.
+	// Let's init the video systems to error out we didn't find the dol in either memory card.
 	ipl_set_config();
 	ipl_read((u8*)MEM_TEMP, 0, 256);
 	init_font();
 
-	/*** init video system with proper video mode ***/
+	// init video system with proper video mode
 	InitSystem(*(u8*)(MEM_TEMP+0x55) == 'P');
 	cls();
 
+	// And show error message
+	print("XenoBoot\n\n");
 	print("Could not find:\n");
 	print(XENO_DOL_NAME);
-	print("\nturn off your GC \n And make sure it's\n on either MemCard");
+	print("\n\nTurn off your GC.\n");
+	print("Verify dol is in either\n");
+	print("Memcard.");
 	
 	while(1);
 

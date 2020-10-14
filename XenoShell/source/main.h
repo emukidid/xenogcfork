@@ -40,24 +40,6 @@ typedef volatile u32	vu32;
 #define EXI_DATA	ebase[4]
 #define EXI_WAIT_EOT	while((EXI_CR)&1);    
 
-/*** controller definitions ***/
-#define PAD_LEFT	0x0001
-#define PAD_RIGHT	0x0002
-#define PAD_DOWN	0x0004
-#define PAD_UP		0x0008
-#define PAD_Z		0x0010
-#define PAD_R		0x0020
-#define PAD_L		0x0040
-#define PAD_A		0x0100
-#define PAD_B		0x0200
-#define PAD_X		0x0400
-#define PAD_Y		0x0800
-#define PAD_START       0x1000
-#define PAD_CLEFT	0x2000
-#define PAD_CRIGHT	0x4000
-#define PAD_CDOWN	0x8000
-#define PAD_CUP		0x10000
-
 /* time */
 #define TB_CLOCK	40500000
 #define mftb(rval) ({unsigned long u; do { \
@@ -73,8 +55,6 @@ typedef struct {
 /*** memcard stuff ***/
 #define MEMCARD_EXI_READ_SIZE		0x200
 #define MEMCARD_BLOCK_SIZE			0x2000
-#define DOLSIZE			(500 * 1024)	// 512kb DOL
-#define DOLSEARCH_RANGE		0x1000000	// (16Mb Card MAX)
 
 #define MEMCARD_A_EXI_REG_BASE 0xCC006800
 #define MEMCARD_B_EXI_REG_BASE 0xCC006814
@@ -151,27 +131,3 @@ typedef struct
 } MemCard;
 
 #define XENO_DOL_NAME "xeno.dol"
-
-/*** dvd stuff ***/
-#define MEM32(_x)		*(u32*)_x		//---------------------------------------------------------------------------------------------------
-#define DVD_DISR		MEM32( 0xcc006000 )	// DI Status Register
-#define DVD_DISR_TCINT		(1 << 4)		// TCINT - Transfer Complete Interrupt Status
-							// read : 0 Interrupt has not been requested / 1 Interrupt has been requested
-							// write: write 0 no effect / 1 clear Interrupt
-#define DVD_DISR_DEINT		(1 << 2)		// DEINT - Device Error Interrupt Status
-							// read : 0 Interrupt has not been requested / 1 Interrupt has been requested
-							// write: write 0 no effect / 1 clear Interrupt
-#define DVD_DICR_DMA		(1 << 1)		// DMA - 0: immediate mode, 1: DMA mode (*1)
-#define DVD_DICR_TSTART		(1 << 0)		// TSTART - transfer start. 
-							// write 1: start transfer, read 1: transfer pendin
-							//---------------------------------------------------------------------------------------------------
-#define DVD_CLEARSTATUS()	DVD_DISR |= ( DVD_DISR_DEINT | DVD_DISR_TCINT );
-#define DVD_WAIT_STATUS()	while( ! ( DVD_DISR & ( DVD_DISR_DEINT | DVD_DISR_TCINT)))
-
-/*** function prototypes ***/
-static void load_apploader();
-/* unused
-static void memcpy32(u32* pDest, u32* pSrc, u32 dwSize);
-*/
-static void memset32(u32* pDest, u32 dwVal, u32 dwSize);
-void InitSystem( unsigned long VidMode );
