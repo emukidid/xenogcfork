@@ -14,7 +14,7 @@ The second method (typically if the first one failed ..., which it shouldn't) is
 
 # Flashing using the software flasher
 This consists of using the XenoFlash.dol utility provided at the root of this repository. Note that this tool is a little finicky, however, I have been able to properly flash my chip with these exact steps about a dozen times without fail, so I'd say it's pretty safe (I repeatedly flashed the chip using my programmer, checked the version, then used these steps to flash it with the dol, and verified that it was indeed updated) so I'm confident this will work (on an actual XenoGC, that is, with an Atmega8 chip).
-First, you will unfortunately still need to take your Gamecube apart, and to get to the optical drive. You will then need to solder a wire from the RST pad (any of the xeno letter !) and the ground pad to a Single Pole, Single Throw (aka... a switch) (see picture). Once that's done..
+First, you will unfortunately still need to take your Gamecube apart, and to get to the optical drive. You will then need to solder a wire from the RST pad (any of the xeno letter !) and the ground pad to a Single Pole, Single Throw (aka... a switch) (see picture [1]). Once that's done..
   * Place the XenoFlash.dol on your sd card / memcard, and boot load it with the loader of your choice.
   * Wait til the dol has fully booted and is displaying instructions.
   * Turn the switch ON (that is to drive RST to GND), the LED should turn OFF. If it doesn't, verify your wires.
@@ -28,6 +28,8 @@ First, you will unfortunately still need to take your Gamecube apart, and to get
   * Turn the switch back OFF, (normal operation) and the LED should shine again (red, not orange on an original XenoGC). If it does you can turn off the gamecube. If it doesn't, turn the switch back on again (that, is to drive RST to GND) and retry to flash until it's successful (as in the led turns on).
  
 At this point, turning on your gamecube and pressing start should greet you with either your xeno.dol loading, or an error message if none was found in your memcards.
+
+[Picture of the wiring](software_installer_switch.jpg)
 
 # Flashing using a USB programmer
 TODO
