@@ -29,7 +29,7 @@ First, you will unfortunately still need to take your Gamecube apart, and to get
  
 At this point, turning on your gamecube and pressing start should greet you with either your xeno.dol loading, or an error message if none was found in your memcards.
 
-[Picture of the wiring](software_installer_switch.jpg)
+[Picture of the wiring](software_installer_switch.jpg)[1]
 
 # Flashing using a USB programmer
 TODO
