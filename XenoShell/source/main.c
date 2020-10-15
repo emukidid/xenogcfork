@@ -486,9 +486,79 @@ static void ReadMemoryCardBlock(int blockIndex, void* pDest)
 	}
 }
 
-u16 GetNextBlock(u16 blockIndex, BlockMap* blockMap)
+// The first 5 blocks for the memcard header aren't referenced in the block map
+// So we the entries actually live in index i - 5
+u16 GetNextBlock(u16 blockIndex, Fat* fat)
 {
-	return blockMap->blockMapArray[blockIndex - 5];
+	return fat->blockAllocTable[blockIndex - 5];
+}
+
+static void checksum(u16 *buff,u32 len,u16 *cs1,u16 *cs2)
+{
+	u32 i;
+    *cs1 = 0;
+	*cs2 = 0; 
+	len /= 2;
+    for (i = 0; i < len; ++i)
+	{ 
+        *cs1 += buff[i]; 
+        *cs2 += (buff[i] ^ 0xffff); 
+    } 
+    if (*cs1 == 0xffff) *cs1 = 0; 
+    if (*cs2 == 0xffff) *cs2 = 0; 
+}
+
+Directory* SelectDirectory(MemCard* memcard)
+{
+	u16 cs1[2];
+	checksum(&memcard->directory1, sizeof(Directory) - sizeof(u32), &cs1[0], &cs1[1]);
+	u8 dir1Good = *((u32*)&memcard->directory1.checksum1) == *(u32*)cs1; 
+
+	checksum(&memcard->directory2, sizeof(Directory) - sizeof(u32), &cs1[0], &cs1[1]);
+	u8 dir2Good = *((u32*)&memcard->directory2.checksum1) == *(u32*)cs1; 
+
+	if(dir1Good && dir2Good)
+	{
+		return (memcard->directory1.updateCounter > memcard->directory2.updateCounter) ?
+	&memcard->directory1 : &memcard->directory2;
+	}
+
+	if(dir1Good)
+	{
+ 		return &memcard->directory1;
+	}
+	if(dir2Good)
+	{
+		return &memcard->directory2;
+	}
+
+	return 0;
+}
+
+Fat* SelectFileTable(MemCard* memcard)
+{
+	u16 cs[2];
+	checksum((u16*)&memcard->fat1 + 2, sizeof(Fat) - 2 * sizeof(u16), &cs[0], &cs[1]);
+	u8 bm1Good = *((u32*)&memcard->fat1.checksum1) == *(u32*)cs; 
+
+	checksum((u16*)&memcard->fat2 +  2, sizeof(Fat) - 2 * sizeof(u16), &cs[0], &cs[1]);
+	u8 bm2Good = *((u32*)&memcard->fat2.checksum1) == *(u32*)cs; 
+
+	if(bm1Good && bm2Good)
+	{
+		return (memcard->fat1.updateCounter > memcard->fat2.updateCounter) ?
+	&memcard->fat1 : &memcard->fat2;
+	}
+
+	if(bm1Good)
+	{
+ 		return &memcard->fat1;
+	}
+	if(bm2Good)
+	{
+ 		return &memcard->fat2;
+	}
+	return 0;
 }
 
 void BootFromMemcard(u8 slotB)
@@ -503,23 +573,27 @@ void BootFromMemcard(u8 slotB)
 	{
 		ReadMemoryCardBlock(i,pLoadPos + i * MEMCARD_BLOCK_SIZE);	
 	}
-
 	MemCard* memCard = (MemCard*)pLoadPos;
+	
+	// Select proper directory storage and fileAllocTable
+	Directory* pDirectory = SelectDirectory(memCard);
+
+	if(!pDirectory) return ;
+
+	Fat* pfileAllocTable = SelectFileTable(memCard);
+
+	if(!pfileAllocTable) return;
 
 	// Copy the block map on the stack as we'll overwrite pLoadPos as soon as we find the dol and copy it there.
-	BlockMap blockMap;
-	memcpy8(&blockMap, &(memCard->blockMap), sizeof(BlockMap));
-
-	// The first 5 blocks for the memcard header aren't referenced in the block map
-	// So the actual entries live at blockIndex - 5
-
-	for(int i = 0; i < DIRECTORY_MAX_SIZE; i++)
+	Fat fileAllocTable;
+	memcpy8((u8*)&fileAllocTable, (u8*)pfileAllocTable, sizeof(Fat));
+	for(int i = 0; i < DIRECTORY_SIZE; i++)
 	{
-		DirectoryEntry* entry = &(memCard->directory.entries[i]);
-		if(memcmp8(XENO_DOL_NAME, entry->filename, sizeof(XENO_DOL_NAME) - 1)) // exclude \0
+		DirectoryEntry* entry = &(pDirectory->entries[i]);
+		if(memcmp8(XENO_DOL_NAME, (u8*)entry->filename, sizeof(XENO_DOL_NAME) - 1)) // exclude \0
 		{
 			// Swiss uses an extra block for the gci header so we actually start at block + 1
-			u16 blockIndex = GetNextBlock(entry->firstBlockIndex, &blockMap);
+			u16 blockIndex = GetNextBlock(entry->firstBlockIndex, &fileAllocTable);
 			u16 fileLength = entry->fileLength;
 
 			int c = 0;
@@ -527,10 +601,7 @@ void BootFromMemcard(u8 slotB)
 			{
 				ReadMemoryCardBlock(blockIndex, pLoadPos + c * MEMCARD_BLOCK_SIZE);	
 				c++;
-				
-				// The first 5 blocks for the memcard header aren't referenced in the block map
-				// So we the entries actually live in index i - 5
-				blockIndex = GetNextBlock(blockIndex, &blockMap);
+				blockIndex = GetNextBlock(blockIndex, &fileAllocTable);
 			}
 
 			LoadDolAtAddress((u8*)pLoadPos);
@@ -549,13 +620,11 @@ int main(void)
 	BootFromMemcard(0);
 
 	// Let's init the video systems to error out we didn't find the dol in either memory card.
+	InitSystem(*(u8*)(MEM_TEMP+0x55) == 'P');
+	cls();
 	ipl_set_config();
 	ipl_read((u8*)MEM_TEMP, 0, 256);
 	init_font();
-
-	// init video system with proper video mode
-	InitSystem(*(u8*)(MEM_TEMP+0x55) == 'P');
-	cls();
 
 	// And show error message
 	print("XenoBoot\n\n");

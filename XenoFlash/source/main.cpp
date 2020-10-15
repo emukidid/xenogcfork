@@ -380,7 +380,7 @@ int main ()
    //set green color
    printf("\x1b[32m");
    printf("Set flash switch to \x1b[31m[ON]\x1b[32m position now\n");
-   printf("then press A to start flashing.\n\n");
+   printf("then press Y to erase flash, or A to start flashing.\n\n");
 
    while(1) {
 

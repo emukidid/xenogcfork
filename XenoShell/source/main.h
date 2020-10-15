@@ -97,37 +97,41 @@ struct DirectoryEntry_t
 
 typedef struct DirectoryEntry_t DirectoryEntry;
 
+#define DIRECTORY_SIZE 127
+
 struct Directory_t
 {
-	DirectoryEntry entries[128];
+	DirectoryEntry entries[DIRECTORY_SIZE];
+	u8 padding[0x3A];
+	u16 updateCounter;
+	u16 checksum1;
+	u16 checksum2;
 } __attribute__((__packed__));
 
 typedef struct Directory_t Directory;
 
-struct BlockMap_t
+struct Fat_t
 {
 	u16 checksum1;
 	u16 checksum2;
 	u16 updateCounter;
 	u16 numFreeBlocks;
 	u16 lastAllocatedBlockindex;
-	u16 blockMapArray[0x0ffd];
+	u16 blockAllocTable[0xffb];
 } __attribute__((__packed__));
 
-typedef struct BlockMap_t BlockMap;
+typedef struct Fat_t Fat;
 
 #define INVALID_BLOCK 0x0000
 #define LAST_BLOCK 0xFFFF
 
-#define DIRECTORY_MAX_SIZE 128
-
 typedef struct
 {
 	MemCardHeader header;
-	Directory directory;
-	Directory backupDirectory;
-	BlockMap blockMap;
-	BlockMap backupBlockMap;
+	Directory directory1;
+	Directory directory2;
+	Fat fat1;
+	Fat fat2;
 } MemCard;
 
 #define XENO_DOL_NAME "xeno.dol"
