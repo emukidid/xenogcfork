@@ -1,8 +1,9 @@
 # xenogcfork by Vingt-2
 This is another fork of xenogcfork originally published by emukidid.
 
-Here is the major difference of this fork:
+Here is the major difference in this fork:
 * Replaced multi-game disc shell with a robust dol loader looking for a ``xeno.dol`` file in either memory card.
+* You will still need a readable, bootable disc in your drive (can be anything).
 * A .dol can easily be placed onto a memory card using swiss-gc (turning on file management in swiss's settings)
 
 # Installation  
@@ -32,5 +33,7 @@ At this point, turning on your gamecube and pressing start should greet you with
 [Picture of the wiring](software_installer_switch.jpg)[1]
 
 # Flashing using a USB programmer
-TODO
-  
+You can also flash the chip directly using the ISP protocol to talk to the atmega8. The make file is already setup to use a usb programmer, I suggest you get yourself [one of these](https://www.amazon.com/USBtinyISP-Programmer-Bootloader-Download-Interface/dp/B01FDD4EP0/ref=pd_sbs_147_1/144-1489403-8576528?_encoding=UTF8&pd_rd_i=B01FDD4EP0&pd_rd_r=1a83009a-2ba1-4ee5-8a71-049222208b30&pd_rd_w=Rpcqt&pd_rd_wg=AUjDZ&pf_rd_p=b65ee94e-1282-43fc-a8b1-8bf931f6dfab&pf_rd_r=BW638ZGZ8ZXYEM6SSNVF&psc=1&refRID=BW638ZGZ8ZXYEM6SSNVF), or similar !
+You will need to download [avrdude](https://www.nongnu.org/avrdude/) and place both files at the root of the repo.
+Now is solder time, I like using DuPont head style cables so I can tightly connect each pin of the programmer. Once you have soldered all the wires to the pcb and connected each pin to the programmer (diagram coming).
+Just enter make flash in a command line in the repo, (you mind need to install make on windows). This will flash xenoAT.hex that is located in XenoAT/. You can now put the optical drive back on its socket and give it a spin.
