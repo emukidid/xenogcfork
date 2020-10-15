@@ -37,3 +37,6 @@ You can also flash the chip directly using the ISP protocol to talk to the atmeg
 You will need to download [avrdude](https://www.nongnu.org/avrdude/) and place both files at the root of the repo.
 Now is solder time, I like using DuPont head style cables so I can tightly connect each pin of the programmer. Once you have soldered all the wires to the pcb and connected each pin to the programmer (diagram coming).
 Just enter make flash in a command line in the repo, (you mind need to install make on windows). This will flash xenoAT.hex that is located in XenoAT/. You can now put the optical drive back on its socket and give it a spin.
+
+# To compile this yourself
+You will need to install both [devkitppc](https://devkitpro.org/wiki/Getting_Started) and their gamecube libraries (for the .dol flasher) as well as [WinAVR](https://sourceforge.net/projects/winavr/files/WinAVR/20050214/) This version preferred.
