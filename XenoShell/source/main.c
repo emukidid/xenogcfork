@@ -627,7 +627,7 @@ int main(void)
 	init_font();
 
 	// And show error message
-	print("XenoPoop\n\n");
+	print("XenoBoot\n\n");
 	print("Could not find:\n");
 	print(XENO_DOL_NAME);
 	print("\n\nTurn off your GC.\n");
