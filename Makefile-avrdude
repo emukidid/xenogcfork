@@ -14,10 +14,10 @@
 #
 AVR     =  m8
 TARGET  =  XenoAT
-AVRDUDE =  /usr/bin/avrdude
-DEVICE  =  ponyser
-PORT    =  /dev/ttyS0
-FLAGS = -p $(AVR) -c $(DEVICE) -P $(PORT) 
+AVRDUDE =  ./avrdude.exe
+DEVICE  =  usbtiny
+PORT    =  usb 
+FLAGS = -p $(AVR) -c $(DEVICE) -P $(PORT)
 ###########################################################################################
 ###########################################################################################
 

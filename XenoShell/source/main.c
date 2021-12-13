@@ -1,10 +1,13 @@
 /**
-  * XenoShell Custom v1.0
+  * XenoBoot, from Xenoshell custom
   *
   * Originally by cheqmate/adhs
   *
   * Continued by www.gc-forever.com members
   * emu_kidid, ...
+  * 
+  * Xenoboot by vingt-2
+  * https://github.com/vingt-2/xenogcfork
   */
 
 #include "main.h"
@@ -14,25 +17,22 @@
 #define HEIGHT_NTSC 480
 #define HEIGHT_PAL 576
 
-/*** memcard mode ***/
-#define MCMODE 1
-
 u32 *fb = (u32*) (MEM_FB2 + YBORDEROFFSET);
 u32 vidHeight = HEIGHT_NTSC;
-u32 g_aMBTable[0x50 / 4] __attribute__((aligned(32)));
 u16 g_nX = 32, g_nY = 0;
 
 /*** set exi base address ***/
 volatile u32* ebase = (u32*) 0xCC006800;
 int font_offset[256], font_size[256], font_height;
 
-volatile long *dvd = (volatile long *) 0xCC006000;
-
 /*** extern function definitions ***/
 
 extern long GetMSR();
 extern void SetMSR(long);
 extern void dcache_flush_icache_inv(void *, int);
+
+static void print(const char *string);
+static void GC_Sleep(u32 dwMiliseconds);
 
 /*** exi / ipl font stuff ***/
 
@@ -46,14 +46,40 @@ static void exi_deselect(void)
 	EXI_SR &= ~0x100;
 }
 
-static void exi_write_word(unsigned long word)
+
+static void memset32(u32* pDest, u32 dwVal, u32 dwSize)
+{
+	while(dwSize--) {
+		*pDest++ = dwVal;
+	}
+}
+
+static u8 memcmp8(u8* pDest, u8* pSrc, u32 dwSize)
+{
+	while(dwSize--)
+	{
+		if(*pDest++ != *pSrc++)
+			return 0;
+	}
+	return 1;
+}
+
+static void memcpy8(u8* pDest, u8* pSrc, u32 dwSize)
+{
+	while(dwSize--) 
+	{
+		*pDest++ = *pSrc++;
+	}
+}
+
+static void exi_write_word(u32 word)
 {
 	EXI_DATA = word;
 	EXI_CR = 0x35;
 	EXI_WAIT_EOT;
 }
 
-static void exi_read(unsigned char *dst, int len)
+static void exi_read(u8 *dst, int len)
 {
 	while (len)
 	{
@@ -63,13 +89,13 @@ static void exi_read(unsigned char *dst, int len)
 		EXI_DATA = 0;
 		EXI_CR = 0x31;
 		EXI_WAIT_EOT;
-		*(unsigned long*)dst = EXI_DATA;
+		*(u32*)dst = EXI_DATA;
 		dst += 4;
 		len -= l;
 	}
 }
 
-static void ipl_read(unsigned char *dst, int address, int len)
+static void ipl_read(u8 *dst, int address, int len)
 {
 	while (len)	{
 		exi_select();
@@ -90,7 +116,7 @@ static void ipl_set_config(void)
 	exi_deselect();
 }
 
-static void untile(unsigned char *dst, unsigned char *src, int xres, int yres)
+static void untile(u8 *dst, u8 *src, int xres, int yres)
 {
 	// 8x8 tiles
 	int x, y;
@@ -102,7 +128,7 @@ static void untile(unsigned char *dst, unsigned char *src, int xres, int yres)
 			int iy, ix;
 			for (iy = 0; iy < 8; ++iy, src+=2)
 			{
-				unsigned char *d = dst + (y + iy) * xres + x;
+				u8 *d = dst + (y + iy) * xres + x;
 				for (ix = 0; ix < 2; ++ix)
 				{
 					int v = src[ix];
@@ -121,15 +147,15 @@ static void yay0_decode(void *s, void *d)
 {
 	int i, j, k, p, q, cnt;
 
-	i = *(unsigned long *)(s + 4);	  // size of decoded data
-	j = *(unsigned long *)(s + 8);	  // link table
-	k = *(unsigned long *)(s + 12);	 // byte chunks and count modifiers
+	i = *(u32 *)(s + 4);	  // size of decoded data
+	j = *(u32 *)(s + 8);	  // link table
+	k = *(u32 *)(s + 12);	 // byte chunks and count modifiers
 
 	q = 0;					// current offset in dest buffer
 	cnt = 0;				// mask bit counter
 	p = 16;					// current offset in mask table
 
-	unsigned long r22 = 0, r5;
+	u32 r22 = 0, r5;
 	
 	do
 	{
@@ -137,7 +163,7 @@ static void yay0_decode(void *s, void *d)
 		if(cnt == 0)
 		{
 			// read word from mask data block
-			r22 = *(unsigned long *)(s + p);
+			r22 = *(u32 *)(s + p);
 			p += 4;
 			cnt = 32;   // bit counter
 		}
@@ -145,7 +171,7 @@ static void yay0_decode(void *s, void *d)
 		if(r22 & 0x80000000)
 		{
 			// get next byte
-			*(unsigned char *)(d + q) = *(unsigned char *)(s + k);
+			*(u8 *)(d + q) = *(u8 *)(s + k);
 			k++, q++;
 		}
 		// do copy, otherwise
@@ -161,17 +187,17 @@ static void yay0_decode(void *s, void *d)
 			if(r30 == 0)
 			{
 				// get 'count' modifier
-				r5 = *(unsigned char *)(s + k);
+				r5 = *(u8 *)(s + k);
 				k++;
 				r30 = r5 + 18;
 			}
 			else r30 += 2;
 			// do block copy
-			unsigned char *pt = ((unsigned char*)d) + r25;
+			u8 *pt = ((u8*)d) + r25;
 			int i;
 			for(i=0; i<r30; i++)
 			{
-				*(unsigned char *)(d + q) = *(unsigned char *)(pt - 1);
+				*(u8 *)(d + q) = *(u8 *)(pt - 1);
 				q++, pt++;
 			}
 		}
@@ -184,16 +210,16 @@ static void yay0_decode(void *s, void *d)
 
 static void init_font(void)
 {
-	ipl_read((unsigned char*)MEM_FONT, 0x1FCF00, 0x3000);
+	ipl_read((u8*)MEM_FONT, 0x1FCF00, 0x3000);
 	yay0_decode((void*)MEM_FONT, (void*)MEM_WORK);
 	
 	struct font_hdr
 	{
 		unsigned short font_type, first_char, last_char, subst_char, ascent_units, descent_units, widest_char_width,
 			leading_space, cell_width, cell_height;
-		unsigned long texture_size;
+		u32 texture_size;
 		unsigned short texture_format, texture_columns, texture_rows, texture_width, texture_height, offset_charwidth;
-		unsigned long offset_tile, size_tile;
+		u32 offset_tile, size_tile;
 	} *fnt = (void*)MEM_WORK;
 
 	untile((void*)MEM_FONT, (void*)(MEM_WORK + fnt->offset_tile), fnt->texture_width, fnt->texture_height);
@@ -207,7 +233,7 @@ static void init_font(void)
 //		else {
 			c -= fnt->first_char;
 //		}
-		font_size[i] = ((unsigned char*)fnt)[fnt->offset_charwidth + c];
+		font_size[i] = ((u8*)fnt)[fnt->offset_charwidth + c];
 
 		int r = c / fnt->texture_columns;
 		c %= fnt->texture_columns;
@@ -220,9 +246,9 @@ static void init_font(void)
 
 /*** framebuffer stuff ***/
 
-static void blit_char(u16 x, u16 y, unsigned char c)
+static void blit_char(u16 x, u16 y, u8 c)
 {
-	unsigned char *fnt = ((unsigned char*)MEM_FONT) + font_offset[c];
+	u8 *fnt = ((u8*)MEM_FONT) + font_offset[c];
 	int ay, ax;
 	for (ay=0; ay<font_height; ++ay) {
 		for (ax=0; ax<font_size[c]; ax++) {
@@ -242,16 +268,20 @@ static void cls()
 
 static void print(const char *string)
 {
-	if(g_nY >= 460) {
+	if(g_nY >= 460) 
+	{
 		cls();
 	}
 	
-	while((*string)) {
-		if((*string) == '\n') {
+	while((*string)) 
+	{
+		if((*string) == '\n')
+		{
 			g_nY += 24;
 			g_nX = 0;
 		}
-		else {
+		else
+		{
 			blit_char(g_nX, g_nY, *string);
 			g_nX += font_size[(int) *string]-2;
 		}
@@ -259,66 +289,20 @@ static void print(const char *string)
 		string++;
 	}
 
-	if(g_nY >= 460) {
+	if(g_nY >= 460) 
+	{
 		cls();
 	}
 }
 
-/* unused
-static const char numToChar[] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-
-static void printInt(u32 x) {
-	int i = 0;
-	int printedYet=0;
-	char buf[2];
-	for (i = 28; i >= 0; i-=4) {
-		buf[0]=numToChar[(u8)((x>>i)&0xF)];
-		buf[1]=0;
-		if(printedYet || ((x>>i)&0xF)) {
-			print(&buf[0]);
-			printedYet=1;
-		}
-	}
-}
-*/
-
-/*** system and memory stuff ***/
-
-/* unused
-static void memcpy32(u32* pDest, u32* pSrc, u32 dwSize)
+static u32 tb_diff_msec(tb_t *end, tb_t *start)
 {
-	while(dwSize -=4 ) {
-		*pDest++ = *pSrc++;
-	}
-}
-*/
-
-static void memset32(u32* pDest, u32 dwVal, u32 dwSize)
-{
-	while(dwSize--) {
-		*pDest++ = dwVal;
-	}
-}
-
-static u8 memcmp32(u32* pDest, u32* pSrc, u32 dwSize)
-{
-	while(dwSize -=4 ) {
-		if(*pDest++ != *pSrc++) {
-			return 0;
-		}
-	}
-
-	return 1;
-}
-
-static unsigned long tb_diff_msec(tb_t *end, tb_t *start)
-{
-	unsigned long upper, lower;
+	u32 upper, lower;
 	upper = end->u - start->u;
 	if (start->l > end->l)
 		upper--;
 	lower = end->l - start->l;
-	return ((upper*((unsigned long)0x80000000/(TB_CLOCK/2000))) + (lower/(TB_CLOCK/1000)));
+	return ((upper*((u32)0x80000000/(TB_CLOCK/2000))) + (lower/(TB_CLOCK/1000)));
 }
 
 static void GC_Sleep(u32 dwMiliseconds)
@@ -333,170 +317,18 @@ static void GC_Sleep(u32 dwMiliseconds)
 	}
 }
 
-/*** dol loading from memcard ***/
-
-void fn_load_dol_fn_inmem(void *dol)
-{
-	struct dol_s {
-		unsigned long sec_pos[18];
-		unsigned long sec_address[18];
-		unsigned long sec_size[18];
-		unsigned long bss_address, bss_size, entry_point;
-	} *d = (struct dol_s*)dol;
-	
-	int i;
-	for (i=0; i<18; ++i) {
-		if (!d->sec_size[i])
-			continue;
-		
-		// copy section
-		int nCount = d->sec_size[i];
-		char *pDest = (char *) (void*)d->sec_address[i], *pSrc = (char *) ((unsigned char*)dol)+d->sec_pos[i];
-		while (nCount--)
-			*pDest++ = *pSrc++;
-		dcache_flush_icache_inv((void*)d->sec_address[i], d->sec_size[i]);
-	}
-	
-	// clear BSS
-	int nCount = d->bss_size;
-	char *pDest = (char *) d->bss_address;
-	while (nCount--)
-		*pDest++ = 0;
-		
-	SetMSR((GetMSR() | 2) & ~0x8000);
-	SetMSR(GetMSR() & ~0x8000); // EE
-	SetMSR(GetMSR() | 0x2002);  // FP, RI
-	
-	void (*entrypoint)() = (void(*)())d->entry_point;
-	entrypoint();
-}
-
-static void ReadMemcardBlockX(u32 dwOffset, void *pData, u32 dwSize)
-{
-	u8 pCMD[4];
-
-	EXI_SR |= ((1<<0)<<7) | (4 << 4);
-
- 	// read command and block offset 31-8
-	pCMD[0] = 0x52;
-	pCMD[1] = (dwOffset >> 17) & 0x3F;
-	pCMD[2] = (dwOffset >> 9) & 0xFF;
-	pCMD[3] = (dwOffset >> 7) & 3;
-	exi_write_word((u32) pCMD);
-	
-	// block offset 7-0
-	EXI_DATA = (dwOffset & 0x7F);
-	EXI_CR = 0x05;
-	EXI_WAIT_EOT;
-
-	// dummy write
-	exi_write_word(0);
-
-	// read data
-	exi_read((unsigned char*)pData, dwSize);
-	EXI_SR &= ~0x80;
-}
-
-/*** dvd stuff ***/
-
-static int DVD_WaitImmediate()
-{
-	u32 nCount = 0;
-
-	while ((dvd[7] & 1)) {
-		if(++nCount > 0xFFFFFF) {
-			return 0;
-		}
-	}
-
-	return 1;
-}
-
-static int DVD_CustomDbgCommand(u32 dwCommand, u32 dwOffset, u32 dwLength, u32* pBuffer)
-{
-	dvd[0] = 0x2e;
-	dvd[1] = 0;
-	dvd[2] = dwCommand;
-	dvd[3] = dwOffset;
-	dvd[4] = dwLength;
-	dvd[5] = (u32) pBuffer;
-	dvd[6] = dwLength;
-	dvd[7] = 1;
-
-	DVD_WaitImmediate();
-
-	if (dvd[0] & 0x04) {
-		return 1;
-	}
-
-	return 0;
-}
-
-static int DVD_ReadId(void *pDst)
-{
-	dvd[0] = 0x2E;
-	dvd[1] = 0;
-	
-	dvd[2] = 0xA8000040;
-	dvd[3] = 0;
-	dvd[4] = 0x40;
-	dvd[5] = (u32) pDst;
-	dvd[6] = 0x40;
-	dvd[7] = 3;
-
-	int nCount = 0;
-
-	while (nCount++ < 0x3ffffff) {
-		if (dvd[0] & 0x4)
-			return 1;
-		if (!dvd[6])
-			return 0;
-	}
-
-  return 0; /*** keep gcc happy ***/
-}
-
-static int DVD_Read(void *pDst, u32 dwBytes, u32 dwOffset)
-{
-	dvd[0] = 0x2E; // 0x54;
-	//dvd[0] |= 0x10;
-	dvd[1] = 0;
-	
-	dvd[2] = 0xA8000000;
-	dvd[3] = dwOffset >> 2;
-	dvd[4] = (u32) dwBytes;
-	dvd[5] = (u32) pDst;
-	dvd[6] = (u32) dwBytes;
-	dvd[7] = 3;
-
-	int nCount = 0;
-	const int c_nErrorTime = 0xF00000;
-
-	while (nCount++ < c_nErrorTime  + 0x1000) {
-		u32 dwStat		= dvd[0];
-		u32 dwDMABytes	= dvd[6];
-
-		if (dwStat & 0x4) {
-			return 1;
-		}
-		if (dwDMABytes == 0) {
-			return 0;
-		}
-	}
-
-  return 0; /*** keep gcc happy ***/
-}
 
 /*** video modes ***/
-
-static const u32 GC_VI_MODE_IRegs_PAL[16] = {
+static const u32 GC_VI_MODE_IRegs_PAL[16] = 
+{
 	0x11F50101, 0x4B6A01B0, 0x02F85640, 0x00010023,
 	0x00000024, 0x4D2B4D6D, 0x4D8A4D4C, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x013C0144,
 	0x113901B1, 0x10010001, 0x00010001, 0x00010001
 };
 
-static const u32 GC_VI_MODE_IRegs_NTSC[16] = {
+static const u32 GC_VI_MODE_IRegs_NTSC[16] = 
+{
 	0x0F060001, 0x476901AD, 0x02EA5140, 0x00030018,
 	0x00020019, 0x410C410C, 0x40ED40ED, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -504,7 +336,8 @@ static const u32 GC_VI_MODE_IRegs_NTSC[16] = {
 };
 
 
-static const u32 GC_VI_MODE_IRegs_Common[16] = {
+static const u32 GC_VI_MODE_IRegs_Common[16] = 
+{
 	0x00000000, 0x00000000, 0x28500100, 0x1AE771F0,
 	0x0DB4A574, 0x00C1188E, 0xC4C0CBE2, 0xFCECDECF,
 	0x13130F08, 0x00080C0F, 0x00FF0000, 0x00000000,
@@ -529,7 +362,7 @@ static void InitVideo(u32* pData)
 	R_VIDEO_FRAMEBUFFER_2 =  MEM_FB2;
 }
 
-void InitSystem( unsigned long VidMode )
+void InitSystem( u32 VidMode )
 {
 	*(unsigned short*)0x800030e0 = 6;				// production pads
 
@@ -557,234 +390,251 @@ void InitSystem( unsigned long VidMode )
 
 	GC_DefaultConfig[43] = VidMode;
 
-	for(Counter=0; Counter<56; Counter++) {
+	for(Counter=0; Counter<56; Counter++) 
+	{
 		pDstAddr[Counter] = pSrcAddr[Counter];
 	}
 
-	if( VidMode == 1 )	{
+	if( VidMode == 1 )	
+	{
 		InitVideo((u32*)GC_VI_MODE_IRegs_PAL);
 		vidHeight = HEIGHT_PAL;
 	}
-	else {
+	else 
+	{
 		InitVideo((u32*) GC_VI_MODE_IRegs_NTSC);
 		vidHeight = HEIGHT_NTSC;
 	}
 }
 
-static void report(const char* szMsg, ...) {
-}
+/*** dol loading from memcard ***/
 
-static u16 ShowMultibootGames()
+void LoadDolAtAddress(void *dol)
 {
-	u16 nGames = 0;
-	u32* pTable = g_aMBTable;
+	struct dol_s 
+	{
+		u32 sec_pos[18];
+		u32 sec_address[18];
+		u32 sec_size[18];
+		u32 bss_address, bss_size, entry_point;
+	} *d = (struct dol_s*)dol;
 	
-	// get table
-	DVD_Read(pTable, 0x50, 0x40);
-
-	// limit to max 16 games
-	pTable[(0x50/4)-4] = 0;
-
-	g_nY = MBLIST_Y;
-
-	while(*pTable != 0) {
-		u32 dwOffset = 	*pTable++;
-		nGames++;
-
-		// Set offset
-		DVD_CustomDbgCommand(0x28000000, (dwOffset / 0x400) << 8, 0x20, 0);
-		// Read Id at this offset
-		DVD_ReadId((void*) 0xC0000000);
-		// Read Game Name
-		DVD_Read((void*) 0xC0800000, 0x40, 0x20);
-		*((u32*)0xC0800014) = 0x2e2e2e00;
-
-		g_nX = 21;
-		print((char*) 0xC0800000);
-		print("\n");
+	int i;
+	for (i=0; i<18; ++i) 
+	{
+		if (!d->sec_size[i])
+			continue;
+		
+		// copy section
+		int nCount = d->sec_size[i];
+		char *pDest = (char *) (void*)d->sec_address[i], *pSrc = (char *) ((u8*)dol)+d->sec_pos[i];
+		while (nCount--)
+			*pDest++ = *pSrc++;
+		dcache_flush_icache_inv((void*)d->sec_address[i], d->sec_size[i]);
 	}
-
-	return nGames;
-}
-
-static void load_apploader()
-{
-	void (*app_init)(void (*report)(const char *fmt, ...));
-	int  (*app_main)(void **dst, int *size, int *offset);
-	void *(*app_final)();
-	void (*app_entry)(void(**init)(void (*report)(const char *fmt, ...)), int (**main)(), void *(**final)());
-
-	u8 *buffer = (u8*)0xC0100000;
-
-	cls();
-	DVD_Read(buffer,0x460,0);
-	print("\nLoading...");
-
-	InitSystem((buffer[0x45b] == 2) ? 1 : 0);
-
-	DVD_Read(buffer, 0x20, 0x2440);
-	DVD_Read((void*)0x81200000, ((*(unsigned long*)(buffer+0x14)) + 31) &~31,0x2460);
-
-	app_entry = (void (*)(void(**)(void (*)(const char*,...)),int (**)(),void *(**)()))(*(unsigned long*)(buffer + 0x10));
-	app_entry(&app_init,( int (**)()) &app_main,&app_final);
-	app_init((void (*)(const char*,...))report);
 	
-	for(;;) {
-		void *dst = 0;
-		int len = 0, offset = 0;
-		int res = app_main(&dst, &len, &offset);
-
-		if (!res) break;
-		DVD_Read(dst, len, offset);
-	}
-
-	/*** jump to entry point ***/
-	void (*entrypoint)() = (void (*)()) app_final();
+	// clear BSS
+	int nCount = d->bss_size;
+	char *pDest = (char *) d->bss_address;
+	while (nCount--)
+		*pDest++ = 0;
+		
+	SetMSR((GetMSR() | 2) & ~0x8000);
+	SetMSR(GetMSR() & ~0x8000); // EE
+	SetMSR(GetMSR() | 0x2002);  // FP, RI
+	
+	void (*entrypoint)() = (void(*)())d->entry_point;
 	entrypoint();
 }
 
-/*** do the actual menu ***/
+static void EXIReadMemoryCard(u32 dwOffset, void *pData, u32 dwSize)
+{
+	u32 cmd;
+	u8* pCMD = (u8*)&cmd; 
+
+	// Setup to status register for MemCard read (see documentation)
+	EXI_SR = 0x4A5;
+
+ 	// read command and block offset 31-8
+	pCMD[0] = 0x52;
+	pCMD[1] = (dwOffset >> 17) & 0x3F;
+	pCMD[2] = (dwOffset >> 9) & 0xFF;
+	pCMD[3] = (dwOffset >> 7) & 3;
+
+	// Send the first 4 bytes of the command
+	exi_write_word(cmd);
+	
+	// Then send the last byte
+	EXI_DATA = (dwOffset & 0x7F);
+	EXI_CR = 0x05;
+	EXI_WAIT_EOT;
+
+	u8 dummy[4] = { 0, 0, 0, 0 };
+	// dummy write
+	exi_write_word(0x00000000);
+
+	// read data
+	exi_read((u8*)pData, dwSize);
+	EXI_SR &= ~0x80;
+}
+
+static void ReadMemoryCardBlock(int blockIndex, void* pDest)
+{
+	for(int i = 0; i < 16; i++)
+	{
+		EXIReadMemoryCard(0x2000 * blockIndex + 0x200 * i, ((u8*)pDest + 0x200 * i), 0x200);
+	}
+}
+
+// The first 5 blocks for the memcard header aren't referenced in the block map
+// So we the entries actually live in index i - 5
+u16 GetNextBlock(u16 blockIndex, Fat* fat)
+{
+	return fat->blockAllocTable[blockIndex - 5];
+}
+
+static void checksum(u16 *buff,u32 len,u16 *cs1,u16 *cs2)
+{
+	u32 i;
+    *cs1 = 0;
+	*cs2 = 0; 
+	len /= 2;
+    for (i = 0; i < len; ++i)
+	{ 
+        *cs1 += buff[i]; 
+        *cs2 += (buff[i] ^ 0xffff); 
+    } 
+    if (*cs1 == 0xffff) *cs1 = 0; 
+    if (*cs2 == 0xffff) *cs2 = 0; 
+}
+
+Directory* SelectDirectory(MemCard* memcard)
+{
+	u16 cs1[2];
+	checksum(&memcard->directory1, sizeof(Directory) - sizeof(u32), &cs1[0], &cs1[1]);
+	u8 dir1Good = *((u32*)&memcard->directory1.checksum1) == *(u32*)cs1; 
+
+	checksum(&memcard->directory2, sizeof(Directory) - sizeof(u32), &cs1[0], &cs1[1]);
+	u8 dir2Good = *((u32*)&memcard->directory2.checksum1) == *(u32*)cs1; 
+
+	if(dir1Good && dir2Good)
+	{
+		return (memcard->directory1.updateCounter > memcard->directory2.updateCounter) ?
+	&memcard->directory1 : &memcard->directory2;
+	}
+
+	if(dir1Good)
+	{
+ 		return &memcard->directory1;
+	}
+	if(dir2Good)
+	{
+		return &memcard->directory2;
+	}
+
+	return 0;
+}
+
+Fat* SelectFileTable(MemCard* memcard)
+{
+	u16 cs[2];
+	checksum((u16*)&memcard->fat1 + 2, sizeof(Fat) - 2 * sizeof(u16), &cs[0], &cs[1]);
+	u8 bm1Good = *((u32*)&memcard->fat1.checksum1) == *(u32*)cs; 
+
+	checksum((u16*)&memcard->fat2 +  2, sizeof(Fat) - 2 * sizeof(u16), &cs[0], &cs[1]);
+	u8 bm2Good = *((u32*)&memcard->fat2.checksum1) == *(u32*)cs; 
+
+	if(bm1Good && bm2Good)
+	{
+		return (memcard->fat1.updateCounter > memcard->fat2.updateCounter) ?
+	&memcard->fat1 : &memcard->fat2;
+	}
+
+	if(bm1Good)
+	{
+ 		return &memcard->fat1;
+	}
+	if(bm2Good)
+	{
+ 		return &memcard->fat2;
+	}
+	return 0;
+}
+
+void BootFromMemcard(u8 slotB)
+{
+	const u8* pLoadPos = BS_ADDRESS;
+
+	if(slotB) ebase = MEMCARD_B_EXI_REG_BASE;
+	else ebase = MEMCARD_A_EXI_REG_BASE;
+
+	// Read the memory card data headers
+	for(int i = 0; i < 5; i++)
+	{
+		ReadMemoryCardBlock(i,pLoadPos + i * MEMCARD_BLOCK_SIZE);	
+	}
+	MemCard* memCard = (MemCard*)pLoadPos;
+	
+	// Select proper directory storage and fileAllocTable
+	Directory* pDirectory = SelectDirectory(memCard);
+
+	if(!pDirectory) return ;
+
+	Fat* pfileAllocTable = SelectFileTable(memCard);
+
+	if(!pfileAllocTable) return;
+
+	// Copy the block map on the stack as we'll overwrite pLoadPos as soon as we find the dol and copy it there.
+	Fat fileAllocTable;
+	memcpy8((u8*)&fileAllocTable, (u8*)pfileAllocTable, sizeof(Fat));
+	for(int i = 0; i < DIRECTORY_SIZE; i++)
+	{
+		DirectoryEntry* entry = &(pDirectory->entries[i]);
+		if(memcmp8(XENO_DOL_NAME, (u8*)entry->filename, sizeof(XENO_DOL_NAME) - 1)) // exclude \0
+		{
+			// Swiss uses an extra block for the gci header so we actually start at block + 1
+			u16 blockIndex = GetNextBlock(entry->firstBlockIndex, &fileAllocTable);
+			u16 fileLength = entry->fileLength;
+
+			int c = 0;
+			while(c < fileLength && blockIndex != LAST_BLOCK)
+			{
+				ReadMemoryCardBlock(blockIndex, pLoadPos + c * MEMCARD_BLOCK_SIZE);	
+				c++;
+				blockIndex = GetNextBlock(blockIndex, &fileAllocTable);
+			}
+
+			LoadDolAtAddress((u8*)pLoadPos);
+		}
+	}
+}
 
 int main(void)
 {
 	memset32((void*)0x80000004, 0, (0x01700000-4)/4);
 	*((u32*)0x80000C00) = 0x4c000064;
-	
-	ipl_set_config();
-	ipl_read((unsigned char*)MEM_TEMP, 0, 256);
-	init_font();
 
-	/*** init video system with proper video mode ***/
+	// Try to boot from dol in slot B
+	BootFromMemcard(1);
+	// Try to boot from dol in slot A
+	BootFromMemcard(0);
+
+	// Let's init the video systems to error out we didn't find the dol in either memory card.
 	InitSystem(*(u8*)(MEM_TEMP+0x55) == 'P');
 	cls();
+	ipl_set_config();
+	ipl_read((u8*)MEM_TEMP, 0, 256);
+	init_font();
+
+	// And show error message
+	print("XenoBoot\n\n");
+	print("Could not find:\n");
+	print(XENO_DOL_NAME);
+	print("\n\nTurn off your GC.\n");
+	print("Verify dol is in either\n");
+	print("Memcard.");
 	
-	print("XenoShell\nCustom v1.0 ");
-	print(vidHeight == HEIGHT_PAL ? "PAL":"NTSC");
-	print("\n--------------\n");
+	while(1);
 
-	/* Boot a DOL from Memory Card (user held Z before we started up) */
-	if(*((u32*)0x80000000) == 0x2badc0de || MCMODE==1) {
-		const u32 dwLoadPos = 0x80800000;
-
-		int nOffset = 0;
-		u32 dwSize = DOLSIZE;
-		int nDolOffset;
-		u8* pDest = (u8*) dwLoadPos;
-
-		print("Press A/B for Slot A/B\n");
-		while(1) {
-			u32 dwKeys = ((*((volatile u32*)0xCC006404)) >> 16);
-			*((volatile u32*)0xCC006408);
-			if(dwKeys & PAD_A) {
-				ebase = (u32*) 0xCC006800;
-				print("Using Memcard A\nSearching for DOL . . .\n");
-				break;
-			}
-			if(dwKeys & PAD_B) {
-				ebase = (u32*) 0xCC006814;
-				print("Using Memcard B\nSearching for DOL . . .\n");
-				break;
-			}
-		}
-				
-		while(nOffset < DOLSEARCH_RANGE) {
-			ReadMemcardBlockX(nOffset, (void*)pDest, BLOCK_SIZE);
-			// scan for dolphin app file header
-			for(nDolOffset = 0;nDolOffset < BLOCK_SIZE; nDolOffset += 4) {
-				if(memcmp32((u32*) (pDest+nDolOffset), (u32*)"Dolphin Application", 20) == 1) {
-					g_nX = 0;
-					print("Found DOL:\n");
-					print((char *) pDest+nDolOffset+0x20);
-					print("\n");
-					pDest -= (nDolOffset+0x100);
-					print("Press A to Boot\n");
-					while(1) {
-						u32 dwKeys = ((*((volatile u32*)0xCC006404)) >> 16);
-						*((volatile u32*)0xCC006408);
-						if(dwKeys & PAD_A) {
-							break;
-						}
-					}
-					
-					while(dwSize > 0) {
-						ReadMemcardBlockX(nOffset, (void*)pDest, BLOCK_SIZE);
-						pDest += BLOCK_SIZE;
-						nOffset += BLOCK_SIZE;
-						dwSize -= BLOCK_SIZE;
-					}
-					fn_load_dol_fn_inmem((void *)dwLoadPos);
-				}
-			}
-
-			nOffset += BLOCK_SIZE;
-		}
-	}
-	else
-	{
-		/* Multi Game Shell */
-		while(DVD_ReadId((void*) 0xC0000000)) {
-			GC_Sleep(500);
-		}
-
-		u16 nNumGames, nGameIndex = 0;
-
-		//Set offset to 0
-		DVD_CustomDbgCommand(0x28000000, 0x00, 0x00000000, 0x00000000);
-		DVD_ReadId((void*) 0xC0000000);
-
-		nNumGames = ShowMultibootGames();
-
-		if(nNumGames == 0) {
-			nNumGames = 1;
-			g_aMBTable[0] = 0;
-		}
-
-		while(1) {
-			u32 dwKeys = ((*((volatile u32*)0xCC006404)) >> 16);
-			*((volatile u32*)0xCC006408);
-
-			// move cursor
-			if(dwKeys & PAD_UP) {
-				nGameIndex--;
-			}
-			else if(dwKeys & PAD_DOWN) {
-				nGameIndex++;
-			}
-			if(nGameIndex == 0xFFFF) {
-				nGameIndex = nNumGames-1;
-			}
-			else if(nGameIndex == nNumGames) {
-				nGameIndex = 0;
-			}
-
-			GC_Sleep(100);
-
-			// Start multiboot GCM
-			if(dwKeys & PAD_A) {
-				u32 dwMBOffset = g_aMBTable[nGameIndex];
-			
-				// Set offset
-				DVD_CustomDbgCommand(0x28000000, (dwMBOffset / 0x400) << 8, 0x00000000, 0x00000000);
-				GC_Sleep(500);
-				DVD_ReadId((void*) 0xC0000000);
-				load_apploader();
-			}
-
-			u16 nGame;
-
-			// show cursor
-			g_nY = MBLIST_Y;
-			for( nGame = 0; nGame < nNumGames; nGame++) {
-				if(nGame == nGameIndex) {
-					print("@\n");
-				}
-				else {
-					print("  \n");
-				}
-				g_nX = 0;
-			}
-		}
-	}
-
-  return 0; /*** keep gcc happy ***/
+	return 0; /*** keep gcc happy ***/
 }

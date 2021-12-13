@@ -382,16 +382,15 @@ int main(void)
 	sputs("sync ok.\n");
 
 	// stack-friendly loading :p
-	static u8 PROGMEM pLoaderCode[] =	{	0x80, 0x00,					//  8000		MOV	$00,D0				
-											0xC4, 0xDA, 0xFC,			//  C4DAFC		MOVB	D0,($FCDA)	# disable breakpoints
-								
-											0xF4,0x74,0x74,0x0a,0x08,	//	F47474A708  MOV	$080a74,a0		# restore original 
-											0xF7,0x20,0x4C,0x80,		//	F7204C80    MOV	a0,($804c)		# inthandler
-											0xF4,0x74,					//	F47400D040  MOV	QCODEIMGBASE,a0	# jump to drivecode init
-											(LOADER_ADDR		& 0xFF),				
-											(LOADER_ADDR >> 8	& 0xFF),
-											(LOADER_ADDR >> 16	& 0xFF),		
-											0xF0,0x00					//	F000        JMP	(a0)
+	static const u8 PROGMEM pLoaderCode[] =	{	0x80, 0x00,					//  8000		MOV	$00,D0				
+												0xC4, 0xDA, 0xFC,			//  C4DAFC		MOVB	D0,($FCDA)	# disable breakpoints				
+												0xF4,0x74,0x74,0x0a,0x08,	//	F47474A708  MOV	$080a74,a0		# restore original 
+												0xF7,0x20,0x4C,0x80,		//	F7204C80    MOV	a0,($804c)		# inthandler
+												0xF4,0x74,					//	F47400D040  MOV	QCODEIMGBASE,a0	# jump to drivecode init
+												(LOADER_ADDR		& 0xFF),				
+												(LOADER_ADDR >> 8	& 0xFF),
+												(LOADER_ADDR >> 16	& 0xFF),		
+												0xF0,0x00					//	F000        JMP	(a0)
 	};
 
 	u8* pUpload = qcode;

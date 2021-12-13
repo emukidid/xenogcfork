@@ -44,7 +44,6 @@ extern "C" {
 #define DVD_UnloadQcode		(IMAGEBASE + 0x0D)
 #define DVD_ReadFlashBlock	(IMAGEBASE + 0x10)
 
-
 // 2D Video Globals
 GXRModeObj *vmode;	// Graphics Mode Object
 u32 *xfb = NULL;	// Framebuffer
@@ -52,10 +51,8 @@ int dvdstatus = 0;      //  << is this even needed ?? remove later
 
 
 /*** included binaries ***/
-extern const u8 flashloader_bin[];
-extern const u32 flashloader_bin_size;
-extern const u8 XenoAT_bin[];
-extern const u32 XenoAT_bin_size;
+#include "flashloader_bin.h"
+#include "XenoAT_bin.h"
 
 /*** banner ***/
 extern const unsigned char title_Bitmap[];
@@ -383,7 +380,7 @@ int main ()
    //set green color
    printf("\x1b[32m");
    printf("Set flash switch to \x1b[31m[ON]\x1b[32m position now\n");
-   printf("then press A to start flashing.\n\n");
+   printf("then press Y to erase flash, or A to start flashing.\n\n");
 
    while(1) {
 
